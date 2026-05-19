@@ -1,10 +1,7 @@
-import { Badge } from "@/components/ui/badge"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Textarea } from "@/components/ui/textarea"
 import { VariableInput } from "@/components/variable-input"
 import type { IssueTemplate } from "@/lib/types"
-import { extractVariableNames } from "@/lib/variables"
 
 type IssueTemplateEditorProps = {
   value: IssueTemplate
@@ -17,8 +14,6 @@ export function IssueTemplateEditor({
   availableColumns,
   onChange,
 }: IssueTemplateEditorProps) {
-  const markdownVariables = extractVariableNames(value.description)
-
   return (
     <Card className="h-full">
       <CardHeader>
@@ -49,28 +44,13 @@ export function IssueTemplateEditor({
         />
 
         <div className="flex flex-col gap-2">
-          <span className="text-sm font-medium text-foreground">Description</span>
-
-          <Textarea
+          <VariableInput
+            label="Description"
             value={value.description}
-            onChange={(event) => onChange({ ...value, description: event.target.value })}
+            onChange={(description) => onChange({ ...value, description })}
+            availableColumns={availableColumns}
             placeholder={"## Summary\n\n{{task_title}}\n\n- Team: {{team_name}}"}
-            className="min-h-72 font-mono"
-            spellCheck={false}
           />
-
-          {markdownVariables.length > 0 ? (
-            <div className="flex flex-wrap gap-2">
-              {Array.from(new Set(markdownVariables)).map((variableName) => (
-                <Badge
-                  key={variableName}
-                  variant={availableColumns.includes(variableName) ? "secondary" : "destructive"}
-                >
-                  {`{{${variableName}}}`}
-                </Badge>
-              ))}
-            </div>
-          ) : null}
         </div>
 
         <label className="flex items-center gap-3 rounded-lg border border-border bg-muted/30 px-3 py-3">

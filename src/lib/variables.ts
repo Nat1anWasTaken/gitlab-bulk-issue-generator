@@ -2,6 +2,12 @@ import type { RenderedTemplate, VariableToken } from "@/lib/types"
 
 export const VARIABLE_PATTERN = /{{\s*([^{}]+?)\s*}}/g
 
+export type VariableAutocompleteContext = {
+  start: number
+  end: number
+  query: string
+}
+
 function normalizeVariableName(value: string) {
   return value.trim().replace(/\\([\\`*_{}[\]()#+\-.!])/g, "$1")
 }
@@ -10,6 +16,37 @@ export function extractVariableNames(value: string): string[] {
   return Array.from(value.matchAll(VARIABLE_PATTERN), (match) =>
     normalizeVariableName(match[1])
   )
+}
+
+export function getVariableAutocompleteContext(
+  value: string,
+  caretPosition: number
+): VariableAutocompleteContext | null {
+  const lastOpenIndex = value.lastIndexOf("{{", caretPosition - 1)
+  const lastCloseIndex = value.lastIndexOf("}}", caretPosition - 1)
+
+  if (lastOpenIndex === -1 || lastOpenIndex < lastCloseIndex) {
+    return null
+  }
+
+  const rawQuery = value.slice(lastOpenIndex + 2, caretPosition)
+
+  if (rawQuery.includes("}")) {
+    return null
+  }
+
+  const nextCloseIndex = value.indexOf("}}", caretPosition)
+  const nextOpenIndex = value.indexOf("{{", lastOpenIndex + 2)
+  const end =
+    nextCloseIndex !== -1 && (nextOpenIndex === -1 || nextCloseIndex < nextOpenIndex)
+      ? nextCloseIndex + 2
+      : caretPosition
+
+  return {
+    start: lastOpenIndex,
+    end,
+    query: normalizeVariableName(rawQuery),
+  }
 }
 
 export function tokenizeTemplate(
