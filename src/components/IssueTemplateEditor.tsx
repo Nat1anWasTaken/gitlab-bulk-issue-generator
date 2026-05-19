@@ -16,7 +16,16 @@ import {
 } from "@mdxeditor/editor"
 
 import { Badge } from "@/components/ui/badge"
+import { Checkbox } from "@/components/ui/checkbox"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import { VariableInput } from "@/components/VariableInput"
 import type { IssueTemplate } from "@/lib/types"
 import { extractVariableNames } from "@/lib/variables"
@@ -56,19 +65,25 @@ export function IssueTemplateEditor({
 
         <label className="flex flex-col gap-2">
           <span className="text-sm font-medium text-foreground">Issue type</span>
-          <select
+          <Select
             value={value.issueType}
-            onChange={(event) =>
+            onValueChange={(issueType) =>
               onChange({
                 ...value,
-                issueType: event.target.value as IssueTemplate["issueType"],
+                issueType: issueType as IssueTemplate["issueType"],
               })
             }
-            className="h-10 rounded-lg border border-input bg-background px-3 text-sm text-foreground outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/30"
           >
-            <option value="issue">issue</option>
-            <option value="incident">incident</option>
-          </select>
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder="Select an issue type" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectGroup>
+                <SelectItem value="issue">issue</SelectItem>
+                <SelectItem value="incident">incident</SelectItem>
+              </SelectGroup>
+            </SelectContent>
+          </Select>
         </label>
 
         <VariableInput
@@ -140,11 +155,9 @@ export function IssueTemplateEditor({
         </div>
 
         <label className="flex items-center gap-3 rounded-lg border border-border bg-muted/30 px-3 py-3">
-          <input
-            type="checkbox"
-            className="size-4 rounded border-border"
+          <Checkbox
             checked={value.confidential}
-            onChange={(event) => onChange({ ...value, confidential: event.target.checked })}
+            onCheckedChange={(checked) => onChange({ ...value, confidential: checked === true })}
           />
           <div className="flex flex-col gap-1">
             <span className="text-sm font-medium text-foreground">Confidential</span>

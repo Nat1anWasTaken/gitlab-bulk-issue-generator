@@ -6,6 +6,7 @@ import { GeneratedPreview } from "@/components/GeneratedPreview"
 import { IssueTemplateEditor } from "@/components/IssueTemplateEditor"
 import { ProjectSelector } from "@/components/ProjectSelector"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
+import { Separator } from "@/components/ui/separator"
 import type { GitLabProject, IssueTemplate, TableData } from "@/lib/types"
 import { generateIssues } from "@/lib/gitlabUrl"
 import { parseUploadedCsvFile } from "@/lib/csv"
@@ -81,38 +82,22 @@ function App() {
   }, [customUrl])
 
   React.useEffect(() => {
-    if (!selectedTable) {
-      return
-    }
-
-    if (selectedTable.id !== selectedTableId) {
-      setSelectedTableId(selectedTable.id)
+    if (!selectedTable?.id) {
       return
     }
 
     window.localStorage.setItem(STORAGE_KEYS.tableId, selectedTable.id)
-  }, [selectedTable, selectedTableId])
-
-  React.useEffect(() => {
-    if (!selectedTable) {
-      return
-    }
-
-    setSelectedRowsByTable((current) => {
-      if (current[selectedTable.id]) {
-        return current
-      }
-
-      return {
-        ...current,
-        [selectedTable.id]: selectedTable.rows.map((row) => row.id),
-      }
-    })
   }, [selectedTable])
 
   const activeUrl = customUrl.trim() || selectedProject?.issueNewUrl || ""
   const activeUrlValidation = validateGitLabIssueNewUrl(activeUrl)
-  const selectedRowIds = new Set(selectedRowsByTable[selectedTable?.id ?? ""] ?? [])
+  const selectedRowIds = React.useMemo(() => {
+    if (!selectedTable) {
+      return new Set<string>()
+    }
+
+    return new Set(selectedRowsByTable[selectedTable.id] ?? selectedTable.rows.map((row) => row.id))
+  }, [selectedRowsByTable, selectedTable])
 
   const generatedIssues = React.useMemo(() => {
     if (!selectedTable || !activeUrlValidation.isValid) {
@@ -198,6 +183,8 @@ function App() {
           </div>
         </header>
 
+        <Separator />
+
         <ProjectSelector
           projects={projects}
           selectedProjectUrl={selectedProject?.issueNewUrl ?? ""}
@@ -253,7 +240,9 @@ function App() {
                 return
               }
 
-              const next = new Set(selectedRowsByTable[selectedTable.id] ?? [])
+              const next = new Set(
+                selectedRowsByTable[selectedTable.id] ?? selectedTable.rows.map((row) => row.id)
+              )
 
               if (next.has(rowId)) {
                 next.delete(rowId)

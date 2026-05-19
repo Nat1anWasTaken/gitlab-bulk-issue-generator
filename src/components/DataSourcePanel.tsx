@@ -3,7 +3,25 @@ import { FileUp, Table2 } from "lucide-react"
 
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import { Checkbox } from "@/components/ui/checkbox"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table"
+import { Alert, AlertDescription } from "@/components/ui/alert"
 import type { TableData } from "@/lib/types"
 
 type DataSourcePanelProps = {
@@ -45,18 +63,21 @@ export function DataSourcePanel({
         <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_auto]">
           <label className="flex flex-col gap-2">
             <span className="text-sm font-medium text-foreground">Table</span>
-            <select
-              value={selectedTableId}
-              onChange={(event) => onTableChange(event.target.value)}
-              className="h-10 rounded-lg border border-input bg-background px-3 text-sm text-foreground outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/30"
-            >
-              {tables.map((table) => (
-                <option key={table.id} value={table.id}>
-                  {table.name}
-                  {table.source === "uploaded" ? " (temporary)" : ""}
-                </option>
-              ))}
-            </select>
+            <Select value={selectedTableId} onValueChange={onTableChange}>
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Select a CSV table" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectGroup>
+                  {tables.map((table) => (
+                    <SelectItem key={table.id} value={table.id}>
+                      {table.name}
+                      {table.source === "uploaded" ? " (temporary)" : ""}
+                    </SelectItem>
+                  ))}
+                </SelectGroup>
+              </SelectContent>
+            </Select>
           </label>
 
           <div className="flex flex-col gap-2">
@@ -84,9 +105,9 @@ export function DataSourcePanel({
         </div>
 
         {uploadError ? (
-          <div className="rounded-lg border border-destructive/20 bg-destructive/8 px-3 py-2 text-sm text-destructive">
-            {uploadError}
-          </div>
+          <Alert variant="destructive">
+            <AlertDescription>{uploadError}</AlertDescription>
+          </Alert>
         ) : null}
 
         {selectedTable ? (
@@ -124,68 +145,57 @@ export function DataSourcePanel({
               </Button>
             </div>
 
-            <div className="overflow-hidden rounded-lg border border-border">
-              <div className="max-h-[25rem] overflow-auto">
-                <table className="w-full min-w-[38rem] border-collapse text-left text-sm">
-                  <thead className="sticky top-0 bg-muted/70 backdrop-blur">
-                    <tr>
-                      <th className="w-12 border-b border-border px-3 py-2">
-                        <span className="sr-only">Select row</span>
-                      </th>
-                      <th className="w-16 border-b border-border px-3 py-2 text-muted-foreground">
-                        Row
-                      </th>
-                      {selectedTable.headers.map((header) => (
-                        <th
-                          key={header}
-                          className="border-b border-border px-3 py-2 font-medium text-foreground"
-                        >
-                          {header}
-                        </th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {selectedTable.rows.length > 0 ? (
-                      selectedTable.rows.map((row) => (
-                        <tr key={row.id} className="odd:bg-muted/20">
-                          <td className="border-b border-border px-3 py-2 align-top">
-                            <input
-                              type="checkbox"
-                              className="mt-1 size-4"
-                              checked={selectedRowIds.has(row.id)}
-                              onChange={() => onToggleRow(row.id)}
-                            />
-                          </td>
-                          <td className="border-b border-border px-3 py-2 align-top text-muted-foreground">
-                            {row.index}
-                          </td>
-                          {selectedTable.headers.map((header) => (
-                            <td
-                              key={`${row.id}-${header}`}
-                              className="border-b border-border px-3 py-2 align-top text-foreground"
-                            >
-                              {row.values[header] || <span className="text-muted-foreground">Empty</span>}
-                            </td>
-                          ))}
-                        </tr>
-                      ))
-                    ) : (
-                      <tr>
-                        <td
-                          colSpan={selectedTable.headers.length + 2}
-                          className="px-3 py-8 text-center text-muted-foreground"
-                        >
-                          <div className="flex flex-col items-center gap-2">
-                            <Table2 />
-                            No rows are available in this table.
-                          </div>
-                        </td>
-                      </tr>
-                    )}
-                  </tbody>
-                </table>
-              </div>
+            <div className="max-h-[25rem] overflow-auto rounded-lg border border-border">
+              <Table className="min-w-[38rem]">
+                <TableHeader className="sticky top-0 z-10 bg-muted/70 backdrop-blur">
+                  <TableRow>
+                    <TableHead className="w-12">
+                      <span className="sr-only">Select row</span>
+                    </TableHead>
+                    <TableHead className="w-16 text-muted-foreground">Row</TableHead>
+                    {selectedTable.headers.map((header) => (
+                      <TableHead key={header}>{header}</TableHead>
+                    ))}
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {selectedTable.rows.length > 0 ? (
+                    selectedTable.rows.map((row) => (
+                      <TableRow key={row.id} className="odd:bg-muted/20">
+                        <TableCell className="align-top">
+                          <Checkbox
+                            className="mt-1"
+                            checked={selectedRowIds.has(row.id)}
+                            onCheckedChange={() => onToggleRow(row.id)}
+                            aria-label={`Select row ${row.index}`}
+                          />
+                        </TableCell>
+                        <TableCell className="align-top text-muted-foreground">{row.index}</TableCell>
+                        {selectedTable.headers.map((header) => (
+                          <TableCell
+                            key={`${row.id}-${header}`}
+                            className="align-top whitespace-normal break-words text-foreground"
+                          >
+                            {row.values[header] || <span className="text-muted-foreground">Empty</span>}
+                          </TableCell>
+                        ))}
+                      </TableRow>
+                    ))
+                  ) : (
+                    <TableRow>
+                      <TableCell
+                        colSpan={selectedTable.headers.length + 2}
+                        className="py-8 text-center text-muted-foreground"
+                      >
+                        <div className="flex flex-col items-center gap-2">
+                          <Table2 />
+                          No rows are available in this table.
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  )}
+                </TableBody>
+              </Table>
             </div>
           </>
         ) : (

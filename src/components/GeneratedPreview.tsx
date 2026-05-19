@@ -13,7 +13,9 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
+import { Separator } from "@/components/ui/separator"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Textarea } from "@/components/ui/textarea"
 import type { GeneratedIssue } from "@/lib/types"
 
 type GeneratedPreviewProps = {
@@ -150,6 +152,7 @@ export function GeneratedPreview({
             </Button>
             {copyStatus ? <span className="self-center text-sm text-muted-foreground">{copyStatus}</span> : null}
           </div>
+          <Separator />
           {openStatus ? <div className="text-sm text-muted-foreground">{openStatus}</div> : null}
         </CardHeader>
         <CardContent className="flex flex-col gap-4">
@@ -254,10 +257,10 @@ export function GeneratedPreview({
                   These are the ready-to-open URLs. Use them if your browser blocks the bulk open action.
                 </p>
               </div>
-              <textarea
+              <Textarea
                 readOnly
                 value={urlList}
-                className="min-h-64 w-full rounded-lg border border-input bg-background px-3 py-2 font-mono text-xs text-foreground outline-none"
+                className="min-h-64 font-mono text-xs"
               />
             </TabsContent>
           </Tabs>

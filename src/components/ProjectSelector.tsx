@@ -1,6 +1,14 @@
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import type { GitLabProject, ValidationResult } from "@/lib/types"
 
 type ProjectSelectorProps = {
@@ -35,17 +43,20 @@ export function ProjectSelector({
       <CardContent className="grid gap-4 lg:grid-cols-[minmax(0,22rem)_minmax(0,1fr)]">
         <label className="flex flex-col gap-2">
           <span className="text-sm font-medium text-foreground">GitLab project</span>
-          <select
-            className="h-10 rounded-lg border border-input bg-background px-3 text-sm text-foreground outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/30"
-            value={selectedProjectName}
-            onChange={(event) => onProjectChange(event.target.value)}
-          >
-            {projects.map((project) => (
-              <option key={project.name} value={project.name}>
-                {project.name}
-              </option>
-            ))}
-          </select>
+          <Select value={selectedProjectName} onValueChange={onProjectChange}>
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder="Select a GitLab project" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectGroup>
+                {projects.map((project) => (
+                  <SelectItem key={project.name} value={project.name}>
+                    {project.name}
+                  </SelectItem>
+                ))}
+              </SelectGroup>
+            </SelectContent>
+          </Select>
           <span className="text-xs text-muted-foreground">{selectedProjectUrl}</span>
         </label>
 

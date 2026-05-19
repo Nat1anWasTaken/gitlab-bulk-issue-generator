@@ -25,7 +25,16 @@
     /* Path aliases */
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      "components": ["./src/components"],
+      "components/*": ["./src/components/*"],
+      "ui": ["./src/components/ui"],
+      "ui/*": ["./src/components/ui/*"],
+      "lib": ["./src/lib"],
+      "lib/*": ["./src/lib/*"],
+      "hooks": ["./src/hooks"],
+      "hooks/*": ["./src/hooks/*"],
+      "utils": ["./src/lib/utils"]
     }
   },
   "include": ["src"]
