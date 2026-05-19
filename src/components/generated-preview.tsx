@@ -14,7 +14,6 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import { Separator } from "@/components/ui/separator"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Textarea } from "@/components/ui/textarea"
 import type { GeneratedIssue } from "@/lib/types"
 
@@ -23,7 +22,6 @@ type GeneratedPreviewProps = {
   tableSelected: boolean
   tableIsEmpty: boolean
   activeUrlIsValid: boolean
-  openStatus: string
   onOpenSelected: (mode: "tabs" | "windows") => void
 }
 
@@ -34,10 +32,8 @@ export function GeneratedPreview({
   tableSelected,
   tableIsEmpty,
   activeUrlIsValid,
-  openStatus,
   onOpenSelected,
 }: GeneratedPreviewProps) {
-  const [tab, setTab] = React.useState("issues")
   const [showDialog, setShowDialog] = React.useState(false)
   const [copyStatus, setCopyStatus] = React.useState("")
   const [pendingOpenMode, setPendingOpenMode] = React.useState<"tabs" | "windows">("tabs")
@@ -111,7 +107,7 @@ export function GeneratedPreview({
             <div className="flex flex-col gap-1">
               <CardTitle>Generated preview</CardTitle>
               <CardDescription>
-                Review the rendered GitLab URLs before opening tabs. The app never auto-submits issues.
+                Review the rendered GitLab issues before opening them. The app never auto-submits issues.
               </CardDescription>
             </div>
 
@@ -152,8 +148,10 @@ export function GeneratedPreview({
             </Button>
             {copyStatus ? <span className="self-center text-sm text-muted-foreground">{copyStatus}</span> : null}
           </div>
+          <div className="text-sm text-muted-foreground">
+            If the button didn't work, check if your pop-up has been blocked by your browser.
+          </div>
           <Separator />
-          {openStatus ? <div className="text-sm text-muted-foreground">{openStatus}</div> : null}
         </CardHeader>
         <CardContent className="flex flex-col gap-4">
           {blockingMessages.length > 0 ? (
@@ -169,15 +167,13 @@ export function GeneratedPreview({
             </Alert>
           ) : null}
 
-          <Tabs value={tab} onValueChange={setTab} className="flex flex-col gap-4">
-            <TabsList>
-              <TabsTrigger value="issues">Rendered issues</TabsTrigger>
-              <TabsTrigger value="urls">Manual URLs</TabsTrigger>
-            </TabsList>
-
-            <TabsContent value="issues" className="flex flex-col gap-4">
-              {generatedIssues.length > 0 ? (
-                generatedIssues.map((issue) => (
+          <section className="flex flex-col gap-4">
+            <div>
+              <h3 className="text-sm font-semibold text-foreground">Rendered issues</h3>
+            </div>
+            {generatedIssues.length > 0 ? (
+              <div className="max-h-[70vh] space-y-4 overflow-y-auto pr-1">
+                {generatedIssues.map((issue) => (
                   <div key={issue.rowId} className="rounded-lg border border-border bg-background p-4">
                     <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
                       <div className="flex flex-col gap-2">
@@ -238,27 +234,24 @@ export function GeneratedPreview({
                       </Alert>
                     ) : null}
                   </div>
-                ))
-              ) : (
-                <div className="rounded-lg border border-dashed border-border px-4 py-10 text-center text-sm text-muted-foreground">
-                  Select rows in a CSV table to generate issue previews.
-                </div>
-              )}
-            </TabsContent>
-
-            <TabsContent value="urls" className="flex flex-col gap-4">
-              <div className="rounded-lg border border-border bg-muted/30 p-4">
-                <p className="text-sm text-muted-foreground">
-                  These are the ready-to-open URLs. Use them if your browser blocks the bulk open action.
-                </p>
+                ))}
               </div>
-              <Textarea
-                readOnly
-                value={urlList}
-                className="min-h-64 font-mono text-xs"
-              />
-            </TabsContent>
-          </Tabs>
+            ) : (
+              <div className="rounded-lg border border-dashed border-border px-4 py-10 text-center text-sm text-muted-foreground">
+                Select rows in a CSV table to generate issue previews.
+              </div>
+            )}
+          </section>
+
+          <section className="flex flex-col gap-4">
+            <div>
+              <h3 className="text-sm font-semibold text-foreground">Open issues</h3>
+              <p className="text-sm text-muted-foreground">
+                Use this list to open issues manually if your browser blocks the bulk open action.
+              </p>
+            </div>
+            <Textarea readOnly value={urlList} className="min-h-64 font-mono text-xs" />
+          </section>
         </CardContent>
       </Card>
 

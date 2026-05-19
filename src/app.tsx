@@ -80,8 +80,6 @@ function App() {
     readStorage<Record<string, string[]>>(STORAGE_KEYS.selectedRowsByTable, {})
   )
   const [uploadError, setUploadError] = React.useState("")
-  const [openStatus, setOpenStatus] = React.useState("")
-
   const tables = React.useMemo(
     () => [...staticTables, ...uploadedTables].sort((left, right) => left.name.localeCompare(right.name)),
     [uploadedTables]
@@ -180,30 +178,13 @@ function App() {
   function handleOpenSelected(mode: "tabs" | "windows") {
     const readyIssues = generatedIssues.filter((issue) => issue.canOpen)
 
-    let blockedCount = 0
-
     for (const issue of readyIssues) {
       const features =
         mode === "windows"
           ? "noopener,noreferrer,popup=yes,width=1280,height=900"
           : "noopener,noreferrer"
-      const popup = window.open(issue.url, "_blank", features)
-
-      if (!popup) {
-        blockedCount += 1
-      }
+      window.open(issue.url, "_blank", features)
     }
-
-    const targetLabel = mode === "tabs" ? "tab(s)" : "window(s)"
-
-    if (blockedCount > 0) {
-      setOpenStatus(
-        `${readyIssues.length - blockedCount} ${targetLabel} opened. ${blockedCount} popup(s) were blocked. Use copy, download, or manual open as fallback.`
-      )
-      return
-    }
-
-    setOpenStatus(`${readyIssues.length} GitLab issue page(s) opened in new ${mode}.`)
   }
 
   return (
@@ -304,7 +285,6 @@ function App() {
           tableSelected={Boolean(selectedTable)}
           tableIsEmpty={Boolean(selectedTable && selectedTable.rows.length === 0)}
           activeUrlIsValid={activeUrlValidation.isValid}
-          openStatus={openStatus}
           onOpenSelected={handleOpenSelected}
         />
       </div>
