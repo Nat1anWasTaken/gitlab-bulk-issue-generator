@@ -1,0 +1,39 @@
+name: Sync Google Sheets
+
+on:
+  schedule:
+    - cron: '0 0 * * *' # Daily at midnight UTC
+  workflow_dispatch: # Allows manual trigger from GitHub UI
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Run Sheet Sync Script
+        run: node scripts/download_sheets.js
+
+      - name: Commit and Push Changes
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          
+          # Check if there are changes to commit
+          if git status --porcelain | grep -q 'src/data/tables/'; then
+            git add src/data/tables/*.csv
+            git commit -m "chore: sync Google Sheets data [skip ci]"
+            git push
+            echo "Changes pushed successfully!"
+          else
+            echo "No changes in sheets detected."
+          fi
