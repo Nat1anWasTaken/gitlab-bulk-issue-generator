@@ -1,0 +1,12 @@
+task_title,team_name,組長,labels,related_issue_id
+總召組待辦,總召,@qian40,"Status::Inbox,Team::總召組",
+議程組待辦,議程,@hel228oise,"Status::Inbox,Team::議程組",
+編輯組待辦,編輯,@tiffanylaii,"Status::Inbox,Team::編輯組",
+製播組待辦,製播,@brian31405,"Status::Inbox,Team::製播組",
+開發組待辦,開發,@Edit-Mr,"Status::Inbox,Team::開發組",
+設計組待辦,設計,@tong33,"Status::Inbox,Team::設計組",
+財務組待辦,財務,@Lindyy,"Status::Inbox,Team::財務組",
+紀錄組待辦,紀錄,@PuyUeeH,"Status::Inbox,Team::紀錄組",
+行政組待辦,行政,@qiqii77,"Status::Inbox,Team::行政組",
+行銷組待辦,行銷,@moon-jam,"Status::Inbox,Team::行銷組",
+場務組待辦,場務,@fearnot,"Status::Inbox,Team::場務組",
