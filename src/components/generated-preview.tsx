@@ -1,10 +1,17 @@
-import * as React from "react"
-import { AlertTriangle, Copy, Download, Link2, MonitorUp, PanelsTopLeft } from "lucide-react"
+import * as React from "react";
+import {
+  AlertTriangle,
+  Copy,
+  Download,
+  Link2,
+  MonitorUp,
+  PanelsTopLeft,
+} from "lucide-react";
 
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -12,20 +19,20 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog"
-import { Separator } from "@/components/ui/separator"
-import { Textarea } from "@/components/ui/textarea"
-import type { GeneratedIssue } from "@/lib/types"
+} from "@/components/ui/dialog";
+import { Separator } from "@/components/ui/separator";
+import { Textarea } from "@/components/ui/textarea";
+import type { GeneratedIssue } from "@/lib/types";
 
 type GeneratedPreviewProps = {
-  generatedIssues: GeneratedIssue[]
-  tableSelected: boolean
-  tableIsEmpty: boolean
-  activeUrlIsValid: boolean
-  onOpenSelected: (mode: "tabs" | "windows") => void
-}
+  generatedIssues: GeneratedIssue[];
+  tableSelected: boolean;
+  tableIsEmpty: boolean;
+  activeUrlIsValid: boolean;
+  onOpenSelected: (mode: "tabs" | "windows") => void;
+};
 
-const BULK_OPEN_CONFIRMATION_COUNT = 8
+const BULK_OPEN_CONFIRMATION_COUNT = 8;
 
 export function GeneratedPreview({
   generatedIssues,
@@ -34,69 +41,71 @@ export function GeneratedPreview({
   activeUrlIsValid,
   onOpenSelected,
 }: GeneratedPreviewProps) {
-  const [showDialog, setShowDialog] = React.useState(false)
-  const [copyStatus, setCopyStatus] = React.useState("")
-  const [pendingOpenMode, setPendingOpenMode] = React.useState<"tabs" | "windows">("tabs")
+  const [showDialog, setShowDialog] = React.useState(false);
+  const [copyStatus, setCopyStatus] = React.useState("");
+  const [pendingOpenMode, setPendingOpenMode] = React.useState<
+    "tabs" | "windows"
+  >("tabs");
 
-  const validIssues = generatedIssues.filter((issue) => issue.canOpen)
-  const invalidIssues = generatedIssues.filter((issue) => !issue.canOpen)
-  const urlList = validIssues.map((issue) => issue.url).join("\n")
+  const validIssues = generatedIssues.filter((issue) => issue.canOpen);
+  const invalidIssues = generatedIssues.filter((issue) => !issue.canOpen);
+  const urlList = validIssues.map((issue) => issue.url).join("\n");
 
-  const blockingMessages: string[] = []
+  const blockingMessages: string[] = [];
 
   if (!tableSelected) {
-    blockingMessages.push("Select a table first.")
+    blockingMessages.push("請先選擇資料來源。");
   }
 
   if (tableIsEmpty) {
-    blockingMessages.push("The selected table is empty.")
+    blockingMessages.push("請先選擇資料來源");
   }
 
   if (generatedIssues.length === 0) {
-    blockingMessages.push("No rows selected.")
+    blockingMessages.push("你沒有選擇任何的 Row");
   }
 
   if (!activeUrlIsValid) {
-    blockingMessages.push("The GitLab issue URL is invalid.")
+    blockingMessages.push("GitLab Project URL 無效");
   }
 
   if (invalidIssues.length > 0) {
-    blockingMessages.push(`${invalidIssues.length} selected row(s) still have blocking warnings.`)
+    blockingMessages.push(`${invalidIssues.length} 筆資料有問題`);
   }
 
   async function copyUrls() {
     if (!urlList) {
-      return
+      return;
     }
 
-    await navigator.clipboard.writeText(urlList)
-    setCopyStatus("Copied generated URLs.")
-    window.setTimeout(() => setCopyStatus(""), 2000)
+    await navigator.clipboard.writeText(urlList);
+    setCopyStatus("已複製 URL");
+    window.setTimeout(() => setCopyStatus(""), 2000);
   }
 
   function downloadUrls() {
     if (!urlList) {
-      return
+      return;
     }
 
-    const blob = new Blob([urlList], { type: "text/plain;charset=utf-8" })
-    const objectUrl = URL.createObjectURL(blob)
-    const anchor = document.createElement("a")
+    const blob = new Blob([urlList], { type: "text/plain;charset=utf-8" });
+    const objectUrl = URL.createObjectURL(blob);
+    const anchor = document.createElement("a");
 
-    anchor.href = objectUrl
-    anchor.download = "gitlab-issue-urls.txt"
-    anchor.click()
-    URL.revokeObjectURL(objectUrl)
+    anchor.href = objectUrl;
+    anchor.download = "gitlab-issue-urls.txt";
+    anchor.click();
+    URL.revokeObjectURL(objectUrl);
   }
 
   function handleOpenClick(mode: "tabs" | "windows") {
     if (validIssues.length >= BULK_OPEN_CONFIRMATION_COUNT) {
-      setPendingOpenMode(mode)
-      setShowDialog(true)
-      return
+      setPendingOpenMode(mode);
+      setShowDialog(true);
+      return;
     }
 
-    onOpenSelected(mode)
+    onOpenSelected(mode);
   }
 
   return (
@@ -105,17 +114,16 @@ export function GeneratedPreview({
         <CardHeader className="gap-3">
           <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
             <div className="flex flex-col gap-1">
-              <CardTitle>Generated preview</CardTitle>
-              <CardDescription>
-                Review the rendered GitLab issues before opening them. The app never auto-submits issues.
-              </CardDescription>
+              <CardTitle>卡片預覽</CardTitle>
             </div>
 
             <div className="flex flex-wrap items-center gap-2">
-              <Badge variant="outline">{generatedIssues.length} selected</Badge>
-              <Badge variant="secondary">{validIssues.length} ready to open</Badge>
+              <Badge variant="outline">{generatedIssues.length} 筆已選</Badge>
+              <Badge variant="secondary">{validIssues.length} 筆可開啟</Badge>
               {invalidIssues.length > 0 ? (
-                <Badge variant="destructive">{invalidIssues.length} need fixes</Badge>
+                <Badge variant="destructive">
+                  {invalidIssues.length} 筆需要修正
+                </Badge>
               ) : null}
             </div>
           </div>
@@ -127,7 +135,7 @@ export function GeneratedPreview({
               disabled={blockingMessages.length > 0}
             >
               <PanelsTopLeft data-icon="inline-start" />
-              Open in new tabs
+              在新分頁中開啟
             </Button>
             <Button
               type="button"
@@ -136,27 +144,41 @@ export function GeneratedPreview({
               disabled={blockingMessages.length > 0}
             >
               <MonitorUp data-icon="inline-start" />
-              Open in new windows
+              在新視窗中開啟
             </Button>
-            <Button type="button" variant="outline" onClick={() => void copyUrls()} disabled={!urlList}>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => void copyUrls()}
+              disabled={!urlList}
+            >
               <Copy data-icon="inline-start" />
-              Copy all generated URLs
+              複製所有的 URL
             </Button>
-            <Button type="button" variant="outline" onClick={downloadUrls} disabled={!urlList}>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={downloadUrls}
+              disabled={!urlList}
+            >
               <Download data-icon="inline-start" />
-              Download URLs
+              下載 URL
             </Button>
-            {copyStatus ? <span className="self-center text-sm text-muted-foreground">{copyStatus}</span> : null}
+            {copyStatus ? (
+              <span className="self-center text-sm text-muted-foreground">
+                {copyStatus}
+              </span>
+            ) : null}
           </div>
           <div className="text-sm text-muted-foreground">
-            If the button didn't work, check if your pop-up has been blocked by your browser.
+            如果按鈕沒有工作，請檢查瀏覽器是否封鎖了快顯視窗。
           </div>
           <Separator />
         </CardHeader>
         <CardContent className="flex flex-col gap-4">
           {blockingMessages.length > 0 ? (
             <Alert variant="destructive">
-              <AlertTitle>Action blocked</AlertTitle>
+              <AlertTitle>操作被封鎖</AlertTitle>
               <AlertDescription>
                 <ul className="ml-4 list-disc">
                   {blockingMessages.map((message) => (
@@ -169,52 +191,69 @@ export function GeneratedPreview({
 
           <section className="flex flex-col gap-4">
             <div>
-              <h3 className="text-sm font-semibold text-foreground">Rendered issues</h3>
+              <h3 className="text-sm font-semibold text-foreground">
+                卡片列表
+              </h3>
             </div>
             {generatedIssues.length > 0 ? (
               <div className="max-h-[70vh] space-y-4 overflow-y-auto pr-1">
                 {generatedIssues.map((issue) => (
-                  <div key={issue.rowId} className="rounded-lg border border-border bg-background p-4">
+                  <div
+                    key={issue.rowId}
+                    className="rounded-lg border border-border bg-background p-4"
+                  >
                     <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
                       <div className="flex flex-col gap-2">
                         <div className="flex flex-wrap items-center gap-2">
-                          <Badge variant="outline">Row {issue.rowIndex}</Badge>
-                          <Badge variant={issue.canOpen ? "secondary" : "destructive"}>
-                            {issue.canOpen ? "Ready" : "Needs fixes"}
+                          <Badge variant="outline">
+                            第 {issue.rowIndex} 列
                           </Badge>
-                          {issue.confidential ? <Badge variant="outline">Confidential</Badge> : null}
+                          <Badge
+                            variant={
+                              issue.canOpen ? "secondary" : "destructive"
+                            }
+                          >
+                            {issue.canOpen ? "就緒" : "需要修正"}
+                          </Badge>
+                          {issue.confidential ? (
+                            <Badge variant="outline">機密</Badge>
+                          ) : null}
                         </div>
                         <div>
                           <h3 className="text-base font-semibold text-foreground">
-                            {issue.title || "Missing title"}
+                            {issue.title || "缺少標題"}
                           </h3>
-                          <p className="mt-1 text-xs text-muted-foreground break-all">{issue.url}</p>
+                          <p className="mt-1 text-xs text-muted-foreground break-all">
+                            {issue.url}
+                          </p>
                         </div>
                       </div>
 
                       <Button type="button" variant="outline" size="sm" asChild>
                         <a href={issue.url} target="_blank" rel="noreferrer">
                           <Link2 data-icon="inline-start" />
-                          Open one by one
+                          逐一開啟
                         </a>
                       </Button>
                     </div>
 
                     <dl className="mt-4 grid gap-3 text-sm md:grid-cols-2">
                       <div>
-                        <dt className="font-medium text-foreground">Description template</dt>
-                        <dd className="text-muted-foreground">{issue.descriptionTemplate || "Empty"}</dd>
-                      </div>
-                      <div>
-                        <dt className="font-medium text-foreground">Related issue ID</dt>
-                        <dd className="text-muted-foreground">{issue.relatedIssueId || "Empty"}</dd>
+                        <dt className="font-medium text-foreground">
+                          Related issue ID
+                        </dt>
+                        <dd className="text-muted-foreground">
+                          {issue.relatedIssueId || "空白"}
+                        </dd>
                       </div>
                     </dl>
 
                     <div className="mt-4">
-                      <div className="mb-1 text-sm font-medium text-foreground">Description</div>
+                      <div className="mb-1 text-sm font-medium text-foreground">
+                        Description
+                      </div>
                       <pre className="overflow-auto rounded-lg bg-muted/50 p-3 text-xs whitespace-pre-wrap text-foreground">
-                        {issue.description || "Empty"}
+                        {issue.description || "空白"}
                       </pre>
                     </div>
 
@@ -222,7 +261,7 @@ export function GeneratedPreview({
                       <Alert variant="destructive" className="mt-4">
                         <AlertTitle className="flex items-center gap-2">
                           <AlertTriangle className="size-4" />
-                          Warnings
+                          警告
                         </AlertTitle>
                         <AlertDescription>
                           <ul className="ml-4 list-disc">
@@ -238,19 +277,25 @@ export function GeneratedPreview({
               </div>
             ) : (
               <div className="rounded-lg border border-dashed border-border px-4 py-10 text-center text-sm text-muted-foreground">
-                Select rows in a CSV table to generate issue previews.
+                在 CSV 資料表中选择列以產生卡片預覽。
               </div>
             )}
           </section>
 
           <section className="flex flex-col gap-4">
             <div>
-              <h3 className="text-sm font-semibold text-foreground">Open issues</h3>
+              <h3 className="text-sm font-semibold text-foreground">
+                開啟卡片
+              </h3>
               <p className="text-sm text-muted-foreground">
-                Use this list to open issues manually if your browser blocks the bulk open action.
+                若瀏覽器封鎖了批量開啟操作，可使用此清單手動開啟卡片。
               </p>
             </div>
-            <Textarea readOnly value={urlList} className="min-h-64 font-mono text-xs" />
+            <Textarea
+              readOnly
+              value={urlList}
+              className="min-h-64 font-mono text-xs"
+            />
           </section>
         </CardContent>
       </Card>
@@ -259,30 +304,37 @@ export function GeneratedPreview({
         <DialogContent>
           <DialogHeader>
             <DialogTitle>
-              {pendingOpenMode === "tabs" ? "Open many tabs?" : "Open many windows?"}
+              {pendingOpenMode === "tabs"
+                ? "要開啟多個分頁嗎？"
+                : "要開啟多個視窗嗎？"}
             </DialogTitle>
             <DialogDescription>
-              This will attempt to open {validIssues.length} GitLab issue creation pages in separate{" "}
-              {pendingOpenMode === "tabs" ? "tabs" : "windows"}.
-              Your browser may still block some popups.
+              This will attempt to open {validIssues.length} 個 GitLab
+              卡片建立頁面到不同的{" "}
+              {pendingOpenMode === "tabs" ? "分頁" : "視窗"}。
+              你的瀏覽器可能仍會封鎖部分快顯視窗。
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => setShowDialog(false)}>
-              Cancel
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setShowDialog(false)}
+            >
+              取消
             </Button>
             <Button
               type="button"
               onClick={() => {
-                setShowDialog(false)
-                onOpenSelected(pendingOpenMode)
+                setShowDialog(false);
+                onOpenSelected(pendingOpenMode);
               }}
             >
-              Continue
+              繼續
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
     </>
-  )
+  );
 }

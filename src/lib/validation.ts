@@ -6,7 +6,7 @@ export function validateGitLabIssueNewUrl(input: string): ValidationResult {
   if (!input.trim()) {
     return {
       isValid: false,
-      message: "Enter a GitLab issue creation URL.",
+      message: "請輸入 GitLab 卡片建立 URL。",
     }
   }
 
@@ -17,21 +17,21 @@ export function validateGitLabIssueNewUrl(input: string): ValidationResult {
   } catch {
     return {
       isValid: false,
-      message: "This is not a valid URL.",
+      message: "這不是有效的 URL。",
     }
   }
 
   if (!["http:", "https:"].includes(parsedUrl.protocol)) {
     return {
       isValid: false,
-      message: "Only HTTP and HTTPS URLs are supported.",
+      message: "僅支援 HTTP 和 HTTPS URL。",
     }
   }
 
   if (!GITLAB_ISSUE_PATH_PATTERN.test(parsedUrl.pathname)) {
     return {
       isValid: false,
-      message: "The URL must point to a GitLab new issue page ending in /-/issues/new.",
+      message: "URL 必須指向以 /-/issues/new 結尾的 GitLab 新卡片頁面。",
     }
   }
 
@@ -47,6 +47,6 @@ export function validateRelatedIssueId(value: string): ValidationResult {
     ? { isValid: true }
     : {
         isValid: false,
-        message: "Related issue ID must be numeric after variable replacement.",
+        message: "關聯卡片 ID 在替換變數後必須為數字。",
       }
 }

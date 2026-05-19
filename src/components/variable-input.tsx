@@ -271,7 +271,7 @@ export function VariableInput({
             aria-label={`${label} variable suggestions`}
           >
             <div className="px-2 py-1 text-xs text-muted-foreground">
-              Insert variable
+              插入變數
             </div>
             <div className="flex max-h-48 flex-col overflow-y-auto">
               {suggestions.map((variableName, index) => (

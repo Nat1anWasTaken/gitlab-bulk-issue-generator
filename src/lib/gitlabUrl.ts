@@ -16,10 +16,6 @@ export function buildGitLabIssueUrl(
   url.searchParams.set("issue[title]", issue.title)
   url.searchParams.set("issue[issue_type]", "issue")
 
-  if (issue.descriptionTemplate) {
-    url.searchParams.set("description_template", issue.descriptionTemplate)
-  }
-
   if (issue.description) {
     url.searchParams.set("issue[description]", issue.description)
   }
@@ -47,11 +43,6 @@ export function generateIssues(
     .filter((row) => selectedRowIds.has(row.id))
     .map((row) => {
       const title = renderTemplate(template.title, row.values, table.headers)
-      const descriptionTemplate = renderTemplate(
-        template.descriptionTemplate,
-        row.values,
-        table.headers
-      )
       const description = renderTemplate(
         template.description,
         row.values,
@@ -66,29 +57,27 @@ export function generateIssues(
       const warnings: string[] = []
 
       if (!title.value.trim()) {
-        warnings.push("Missing required title.")
+        warnings.push("缺少必要的標題。")
       }
 
       const unknownVariables = [
         ...title.unknownVariables,
-        ...descriptionTemplate.unknownVariables,
         ...description.unknownVariables,
         ...relatedIssueId.unknownVariables,
       ]
 
       if (unknownVariables.length > 0) {
-        warnings.push(`Unknown variables: ${Array.from(new Set(unknownVariables)).join(", ")}`)
+        warnings.push(`未知變數：${Array.from(new Set(unknownVariables)).join(", ")}`)
       }
 
       const emptyVariables = [
         ...title.emptyVariables,
-        ...descriptionTemplate.emptyVariables,
         ...description.emptyVariables,
         ...relatedIssueId.emptyVariables,
       ]
 
       if (emptyVariables.length > 0) {
-        warnings.push(`Empty values: ${Array.from(new Set(emptyVariables)).join(", ")}`)
+        warnings.push(`空值：${Array.from(new Set(emptyVariables)).join(", ")}`)
       }
 
       const relatedIssueValidation = validateRelatedIssueId(relatedIssueId.value)
@@ -100,7 +89,6 @@ export function generateIssues(
         rowId: row.id,
         rowIndex: row.index,
         title: title.value,
-        descriptionTemplate: descriptionTemplate.value,
         description: description.value,
         confidential: template.confidential,
         relatedIssueId: relatedIssueId.value.trim(),
@@ -109,16 +97,16 @@ export function generateIssues(
       const url = buildGitLabIssueUrl(baseIssueNewUrl, base)
 
       if (url.length > URL_WARNING_LENGTH) {
-        warnings.push(`URL is ${url.length} characters long and may exceed browser or GitLab limits.`)
+        warnings.push(`URL 長度為 ${url.length} 個字元，可能超過瀏覽器或 GitLab 的限制。`)
       }
 
       return {
         ...base,
         url,
         warnings,
-        canOpen: warnings.every((warning) => !warning.startsWith("Missing required title")) &&
-          warnings.every((warning) => !warning.startsWith("Unknown variables")) &&
-          warnings.every((warning) => !warning.startsWith("Related issue ID")),
+        canOpen: warnings.every((warning) => !warning.startsWith("缺少必要的標題")) &&
+          warnings.every((warning) => !warning.startsWith("未知變數")) &&
+          warnings.every((warning) => !warning.startsWith("關聯卡片 ID")),
       }
     })
 }

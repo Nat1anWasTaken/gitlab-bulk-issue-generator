@@ -1,5 +1,11 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
@@ -7,17 +13,17 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select"
-import type { GitLabProject, ValidationResult } from "@/lib/types"
+} from "@/components/ui/select";
+import type { GitLabProject, ValidationResult } from "@/lib/types";
 
 type ProjectSelectorProps = {
-  projects: GitLabProject[]
-  value: string
-  selectedProjectName: string
-  validation: ValidationResult
-  onProjectChange: (projectName: string) => void
-  onValueChange: (url: string) => void
-}
+  projects: GitLabProject[];
+  value: string;
+  selectedProjectName: string;
+  validation: ValidationResult;
+  onProjectChange: (projectName: string) => void;
+  onValueChange: (url: string) => void;
+};
 
 export function ProjectSelector({
   projects,
@@ -30,17 +36,19 @@ export function ProjectSelector({
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Where to open the issues</CardTitle>
+        <CardTitle>要把卡片開到哪裡</CardTitle>
         <CardDescription>
-          Choose a bundled GitLab project or override it with a custom new-issue URL.
+          選擇預設的 GitLab 專案，或使用自訂的 URL 覆蓋
         </CardDescription>
       </CardHeader>
       <CardContent className="grid gap-4 lg:grid-cols-[minmax(0,22rem)_minmax(0,1fr)]">
         <label className="flex flex-col gap-2">
-          <span className="text-sm font-medium text-foreground">GitLab project</span>
+          <span className="text-sm font-medium text-foreground">
+            GitLab 專案
+          </span>
           <Select value={selectedProjectName} onValueChange={onProjectChange}>
             <SelectTrigger className="w-full">
-              <SelectValue placeholder="Select a GitLab project" />
+              <SelectValue placeholder="選擇 GitLab 專案" />
             </SelectTrigger>
             <SelectContent>
               <SelectGroup>
@@ -49,31 +57,33 @@ export function ProjectSelector({
                     {project.name}
                   </SelectItem>
                 ))}
-                <SelectItem value="Others">Others</SelectItem>
+                <SelectItem value="其他">其他</SelectItem>
               </SelectGroup>
             </SelectContent>
           </Select>
           <span className="text-xs text-muted-foreground">
-            {selectedProjectName === "Others"
-              ? "Use a custom GitLab new-issue URL."
-              : value}
+            {selectedProjectName === "其他" ? "使用自訂的 URL。" : value}
           </span>
         </label>
 
         <label className="flex flex-col gap-2">
-          <span className="text-sm font-medium text-foreground">Custom GitLab issue URL</span>
+          <span className="text-sm font-medium text-foreground">自訂 URL</span>
           <Input
             value={value}
             onChange={(event) => onValueChange(event.target.value)}
             placeholder="https://gitlab.com/group/project/-/issues/new"
           />
           <div className="flex flex-wrap items-center gap-2 text-xs">
-            <span className={validation.isValid ? "text-emerald-700" : "text-destructive"}>
-              {validation.isValid ? "Target URL looks valid." : validation.message}
+            <span
+              className={
+                validation.isValid ? "text-emerald-700" : "text-destructive"
+              }
+            >
+              {validation.isValid ? "看起來很棒" : validation.message}
             </span>
           </div>
         </label>
       </CardContent>
     </Card>
-  )
+  );
 }

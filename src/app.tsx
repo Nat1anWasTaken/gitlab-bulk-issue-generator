@@ -1,17 +1,17 @@
-import * as React from "react"
+import * as React from "react";
 
-import projectsData from "@/data/projects.json"
-import { DataSourcePanel } from "@/components/data-source-panel"
-import { GeneratedPreview } from "@/components/generated-preview"
-import { IssueTemplateEditor } from "@/components/issue-template-editor"
-import { ProjectSelector } from "@/components/project-selector"
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
-import { Separator } from "@/components/ui/separator"
-import type { GitLabProject, IssueTemplate, TableData } from "@/lib/types"
-import { generateIssues } from "@/lib/gitlabUrl"
-import { parseUploadedCsvFile } from "@/lib/csv"
-import { staticTables } from "@/lib/staticTables"
-import { validateGitLabIssueNewUrl } from "@/lib/validation"
+import projectsData from "@/data/projects.json";
+import { DataSourcePanel } from "@/components/data-source-panel";
+import { GeneratedPreview } from "@/components/generated-preview";
+import { IssueTemplateEditor } from "@/components/issue-template-editor";
+import { ProjectSelector } from "@/components/project-selector";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Separator } from "@/components/ui/separator";
+import type { GitLabProject, IssueTemplate, TableData } from "@/lib/types";
+import { generateIssues } from "@/lib/gitlabUrl";
+import { parseUploadedCsvFile } from "@/lib/csv";
+import { staticTables } from "@/lib/staticTables";
+import { validateGitLabIssueNewUrl } from "@/lib/validation";
 
 const STORAGE_KEYS = {
   issueUrl: "gitlab-bulk-issues:issue-url",
@@ -19,152 +19,184 @@ const STORAGE_KEYS = {
   template: "gitlab-bulk-issues:template",
   uploadedTables: "gitlab-bulk-issues:uploaded-tables",
   selectedRowsByTable: "gitlab-bulk-issues:selected-rows-by-table",
-}
+};
 
 const DEFAULT_TEMPLATE: IssueTemplate = {
   title: "{{task_title}}",
-  descriptionTemplate: "",
   description: [
-    "## Summary",
+    "## 摘要",
     "",
     "{{task_title}}",
     "",
-    "- Team: {{team_name}}",
-    "- Assignee: {{assignee}}",
+    "- 團隊：{{team_name}}",
+    "- 負責人：{{assignee}}",
   ].join("\n"),
   confidential: false,
   relatedIssueId: "{{related_issue_id}}",
-}
+};
 
-const projects = projectsData as GitLabProject[]
+const projects = projectsData as GitLabProject[];
 
 function readStorage<T>(key: string, fallback: T): T {
-  const rawValue = window.localStorage.getItem(key)
+  const rawValue = window.localStorage.getItem(key);
 
   if (!rawValue) {
-    return fallback
+    return fallback;
   }
 
   try {
-    return JSON.parse(rawValue) as T
+    return JSON.parse(rawValue) as T;
   } catch {
-    return fallback
+    return fallback;
   }
 }
 
 function readStoredTemplate(): IssueTemplate {
-  const storedTemplate = readStorage<Partial<IssueTemplate> | null>(STORAGE_KEYS.template, null)
+  const storedTemplate = readStorage<Partial<IssueTemplate> | null>(
+    STORAGE_KEYS.template,
+    null,
+  );
 
   if (!storedTemplate) {
-    return DEFAULT_TEMPLATE
+    return DEFAULT_TEMPLATE;
   }
 
   return {
     ...DEFAULT_TEMPLATE,
     ...storedTemplate,
-  }
+  };
 }
 
 function App() {
-  const [template, setTemplate] = React.useState<IssueTemplate>(() => readStoredTemplate())
-  const [issueUrl, setIssueUrl] = React.useState(() =>
-    window.localStorage.getItem(STORAGE_KEYS.issueUrl) ?? projects[0]?.issueNewUrl ?? ""
-  )
+  const [template, setTemplate] = React.useState<IssueTemplate>(() =>
+    readStoredTemplate(),
+  );
+  const [issueUrl, setIssueUrl] = React.useState(
+    () =>
+      window.localStorage.getItem(STORAGE_KEYS.issueUrl) ??
+      projects[0]?.issueNewUrl ??
+      "",
+  );
   const [uploadedTables, setUploadedTables] = React.useState<TableData[]>(() =>
-    readStorage<TableData[]>(STORAGE_KEYS.uploadedTables, [])
-  )
+    readStorage<TableData[]>(STORAGE_KEYS.uploadedTables, []),
+  );
   const [selectedTableId, setSelectedTableId] = React.useState(
-    () => window.localStorage.getItem(STORAGE_KEYS.tableId) ?? staticTables[0]?.id ?? ""
-  )
-  const [selectedRowsByTable, setSelectedRowsByTable] = React.useState<Record<string, string[]>>(() =>
-    readStorage<Record<string, string[]>>(STORAGE_KEYS.selectedRowsByTable, {})
-  )
-  const [uploadError, setUploadError] = React.useState("")
+    () =>
+      window.localStorage.getItem(STORAGE_KEYS.tableId) ??
+      staticTables[0]?.id ??
+      "",
+  );
+  const [selectedRowsByTable, setSelectedRowsByTable] = React.useState<
+    Record<string, string[]>
+  >(() =>
+    readStorage<Record<string, string[]>>(STORAGE_KEYS.selectedRowsByTable, {}),
+  );
+  const [uploadError, setUploadError] = React.useState("");
   const tables = React.useMemo(
-    () => [...staticTables, ...uploadedTables].sort((left, right) => left.name.localeCompare(right.name)),
-    [uploadedTables]
-  )
+    () =>
+      [...staticTables, ...uploadedTables].sort((left, right) =>
+        left.name.localeCompare(right.name),
+      ),
+    [uploadedTables],
+  );
 
   const selectedProject = React.useMemo(
     () => projects.find((project) => project.issueNewUrl === issueUrl),
-    [issueUrl]
-  )
+    [issueUrl],
+  );
 
-  const selectedProjectName = selectedProject?.name ?? "Others"
+  const selectedProjectName = selectedProject?.name ?? "其他";
 
   const selectedTable = React.useMemo(
     () => tables.find((table) => table.id === selectedTableId) ?? tables[0],
-    [selectedTableId, tables]
-  )
+    [selectedTableId, tables],
+  );
 
   React.useEffect(() => {
-    window.localStorage.setItem(STORAGE_KEYS.issueUrl, issueUrl)
-  }, [issueUrl])
+    window.localStorage.setItem(STORAGE_KEYS.issueUrl, issueUrl);
+  }, [issueUrl]);
 
   React.useEffect(() => {
     if (!selectedTable?.id) {
-      return
+      return;
     }
 
-    window.localStorage.setItem(STORAGE_KEYS.tableId, selectedTable.id)
-  }, [selectedTable])
+    window.localStorage.setItem(STORAGE_KEYS.tableId, selectedTable.id);
+  }, [selectedTable]);
 
   React.useEffect(() => {
-    window.localStorage.setItem(STORAGE_KEYS.template, JSON.stringify(template))
-  }, [template])
+    window.localStorage.setItem(
+      STORAGE_KEYS.template,
+      JSON.stringify(template),
+    );
+  }, [template]);
 
   React.useEffect(() => {
-    window.localStorage.setItem(STORAGE_KEYS.uploadedTables, JSON.stringify(uploadedTables))
-  }, [uploadedTables])
+    window.localStorage.setItem(
+      STORAGE_KEYS.uploadedTables,
+      JSON.stringify(uploadedTables),
+    );
+  }, [uploadedTables]);
 
   React.useEffect(() => {
     window.localStorage.setItem(
       STORAGE_KEYS.selectedRowsByTable,
-      JSON.stringify(selectedRowsByTable)
-    )
-  }, [selectedRowsByTable])
+      JSON.stringify(selectedRowsByTable),
+    );
+  }, [selectedRowsByTable]);
 
-  const activeUrl = issueUrl.trim()
-  const activeUrlValidation = validateGitLabIssueNewUrl(activeUrl)
+  const activeUrl = issueUrl.trim();
+  const activeUrlValidation = validateGitLabIssueNewUrl(activeUrl);
   const selectedRowIds = React.useMemo(() => {
     if (!selectedTable) {
-      return new Set<string>()
+      return new Set<string>();
     }
 
-    return new Set(selectedRowsByTable[selectedTable.id] ?? selectedTable.rows.map((row) => row.id))
-  }, [selectedRowsByTable, selectedTable])
+    return new Set(
+      selectedRowsByTable[selectedTable.id] ??
+        selectedTable.rows.map((row) => row.id),
+    );
+  }, [selectedRowsByTable, selectedTable]);
 
   const generatedIssues = React.useMemo(() => {
     if (!selectedTable || !activeUrlValidation.isValid) {
-      return []
+      return [];
     }
 
-    return generateIssues(activeUrl, template, selectedTable, selectedRowIds)
-  }, [activeUrl, activeUrlValidation.isValid, selectedRowIds, selectedTable, template])
+    return generateIssues(activeUrl, template, selectedTable, selectedRowIds);
+  }, [
+    activeUrl,
+    activeUrlValidation.isValid,
+    selectedRowIds,
+    selectedTable,
+    template,
+  ]);
 
   async function handleCsvUpload(file: File | null) {
     if (!file) {
-      return
+      return;
     }
 
-    setUploadError("")
+    setUploadError("");
 
     try {
-      const parsedTable = await parseUploadedCsvFile(file)
+      const parsedTable = await parseUploadedCsvFile(file);
 
       setUploadedTables((current) => {
-        const next = current.filter((table) => table.id !== parsedTable.id)
-        return [...next, parsedTable]
-      })
-      setSelectedTableId(parsedTable.id)
+        const next = current.filter((table) => table.id !== parsedTable.id);
+        return [...next, parsedTable];
+      });
+      setSelectedTableId(parsedTable.id);
       setSelectedRowsByTable((current) => ({
         ...current,
         [parsedTable.id]: parsedTable.rows.map((row) => row.id),
-      }))
+      }));
     } catch (error) {
       setUploadError(
-        error instanceof Error ? `Could not parse CSV: ${error.message}` : "Could not parse CSV."
-      )
+        error instanceof Error
+          ? `無法解析 CSV：${error.message}`
+          : "無法解析 CSV。",
+      );
     }
   }
 
@@ -172,18 +204,18 @@ function App() {
     setSelectedRowsByTable((current) => ({
       ...current,
       [tableId]: rowIds,
-    }))
+    }));
   }
 
   function handleOpenSelected(mode: "tabs" | "windows") {
-    const readyIssues = generatedIssues.filter((issue) => issue.canOpen)
+    const readyIssues = generatedIssues.filter((issue) => issue.canOpen);
 
     for (const issue of readyIssues) {
       const features =
         mode === "windows"
           ? "noopener,noreferrer,popup=yes,width=1280,height=900"
-          : "noopener,noreferrer"
-      window.open(issue.url, "_blank", features)
+          : "noopener,noreferrer";
+      window.open(issue.url, "_blank", features);
     }
   }
 
@@ -193,10 +225,10 @@ function App() {
         <header className="flex flex-col gap-3">
           <div className="max-w-3xl">
             <h1 className="text-3xl font-semibold tracking-tight text-foreground lg:text-4xl">
-              GitLab bulk issue opener
+              GitLab 批量開卡工具
             </h1>
             <p className="mt-2 text-sm text-muted-foreground lg:text-base">
-              Generate documented GitLab prefilled issue URLs from CSV rows, review them, then open one issue page per row for manual submission.
+              幫你開 Issue 的小精靈
             </p>
           </div>
         </header>
@@ -209,13 +241,15 @@ function App() {
           selectedProjectName={selectedProjectName}
           validation={activeUrlValidation}
           onProjectChange={(projectName) => {
-            if (projectName === "Others") {
-              return
+            if (projectName === "其他") {
+              return;
             }
 
-            const project = projects.find((entry) => entry.name === projectName)
+            const project = projects.find(
+              (entry) => entry.name === projectName,
+            );
             if (project) {
-              setIssueUrl(project.issueNewUrl)
+              setIssueUrl(project.issueNewUrl);
             }
           }}
           onValueChange={setIssueUrl}
@@ -223,7 +257,7 @@ function App() {
 
         {!activeUrlValidation.isValid ? (
           <Alert variant="destructive">
-            <AlertTitle>Fix the target URL before opening issues</AlertTitle>
+            <AlertTitle>Project URL 似乎不正確</AlertTitle>
             <AlertDescription>{activeUrlValidation.message}</AlertDescription>
           </Alert>
         ) : null}
@@ -245,37 +279,38 @@ function App() {
             onCsvUpload={(file) => void handleCsvUpload(file)}
             onSelectAll={() => {
               if (!selectedTable) {
-                return
+                return;
               }
 
               updateTableSelection(
                 selectedTable.id,
-                selectedTable.rows.map((row) => row.id)
-              )
+                selectedTable.rows.map((row) => row.id),
+              );
             }}
             onDeselectAll={() => {
               if (!selectedTable) {
-                return
+                return;
               }
 
-              updateTableSelection(selectedTable.id, [])
+              updateTableSelection(selectedTable.id, []);
             }}
             onToggleRow={(rowId) => {
               if (!selectedTable) {
-                return
+                return;
               }
 
               const next = new Set(
-                selectedRowsByTable[selectedTable.id] ?? selectedTable.rows.map((row) => row.id)
-              )
+                selectedRowsByTable[selectedTable.id] ??
+                  selectedTable.rows.map((row) => row.id),
+              );
 
               if (next.has(rowId)) {
-                next.delete(rowId)
+                next.delete(rowId);
               } else {
-                next.add(rowId)
+                next.add(rowId);
               }
 
-              updateTableSelection(selectedTable.id, Array.from(next))
+              updateTableSelection(selectedTable.id, Array.from(next));
             }}
           />
         </section>
@@ -283,13 +318,15 @@ function App() {
         <GeneratedPreview
           generatedIssues={generatedIssues}
           tableSelected={Boolean(selectedTable)}
-          tableIsEmpty={Boolean(selectedTable && selectedTable.rows.length === 0)}
+          tableIsEmpty={Boolean(
+            selectedTable && selectedTable.rows.length === 0,
+          )}
           activeUrlIsValid={activeUrlValidation.isValid}
           onOpenSelected={handleOpenSelected}
         />
       </div>
     </main>
-  )
+  );
 }
 
-export default App
+export default App;
