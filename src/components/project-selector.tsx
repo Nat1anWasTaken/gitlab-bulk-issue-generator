@@ -62,7 +62,7 @@ export function ProjectSelector({
             </SelectContent>
           </Select>
           <span className="text-xs text-muted-foreground">
-            {selectedProjectName === "其他" ? "使用自訂的 URL。" : value}
+            {selectedProjectName === "其他" ? "使用自訂的 URL" : value}
           </span>
         </label>
 
