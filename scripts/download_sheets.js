@@ -54,6 +54,11 @@ async function downloadSheets() {
 
   const targetDir = path.join(__dirname, '..', 'src', 'data', 'tables');
   fs.mkdirSync(targetDir, { recursive: true });
+  for (const entry of fs.readdirSync(targetDir)) {
+    if (entry.endsWith('.csv')) {
+      fs.unlinkSync(path.join(targetDir, entry));
+    }
+  }
   console.log(`Saving sheets to ${targetDir}...`);
 
   for (const sheet of finalSheets) {
