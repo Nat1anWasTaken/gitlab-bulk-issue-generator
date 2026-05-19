@@ -1,4 +1,4 @@
-import type * as React from "react"
+import * as React from "react"
 
 import { cn } from "@/lib/utils"
 
@@ -11,14 +11,36 @@ function Dialog({
   onOpenChange: (open: boolean) => void
   children: React.ReactNode
 }) {
-  if (!open) {
-    return null
-  }
+  const ref = React.useRef<HTMLDialogElement>(null)
+
+  React.useEffect(() => {
+    const dialog = ref.current
+    if (!dialog) return
+
+    if (open) {
+      if (!dialog.open) {
+        dialog.showModal()
+      }
+    } else {
+      if (dialog.open) {
+        dialog.close()
+      }
+    }
+  }, [open])
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/45 p-4"
-      onClick={() => onOpenChange(false)}
+    <dialog
+      ref={ref}
+      onCancel={(event) => {
+        event.preventDefault()
+        onOpenChange(false)
+      }}
+      onClick={(event) => {
+        if (event.target === ref.current) {
+          onOpenChange(false)
+        }
+      }}
+      className="fixed inset-0 z-50 hidden items-center justify-center bg-transparent p-4 backdrop:bg-black/45 backdrop:backdrop-blur-sm open:flex"
     >
       <div
         className="w-full max-w-xl"
@@ -26,7 +48,7 @@ function Dialog({
       >
         {children}
       </div>
-    </div>
+    </dialog>
   )
 }
 
