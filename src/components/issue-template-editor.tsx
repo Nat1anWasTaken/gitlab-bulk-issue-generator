@@ -93,7 +93,6 @@ export function IssueTemplateEditor({
           availableColumns={availableColumns}
           placeholder="incident-template"
           singleLine
-          description="GitLab issuable_template supports issues, incidents, and merge requests."
         />
 
         <VariableInput
@@ -103,16 +102,10 @@ export function IssueTemplateEditor({
           availableColumns={availableColumns}
           placeholder="okr-template"
           singleLine
-          description="GitLab description_template supports tasks, OKRs, issues, and epics."
         />
 
         <div className="flex flex-col gap-2">
-          <div className="flex flex-col gap-1">
-            <span className="text-sm font-medium text-foreground">Description</span>
-            <span className="text-xs text-muted-foreground">
-              Markdown content is passed to GitLab as <span className="font-mono">issue[description]</span>.
-            </span>
-          </div>
+          <span className="text-sm font-medium text-foreground">Description</span>
 
           <div className="rounded-lg border border-input bg-background">
             <MDXEditor
@@ -159,12 +152,7 @@ export function IssueTemplateEditor({
             checked={value.confidential}
             onCheckedChange={(checked) => onChange({ ...value, confidential: checked === true })}
           />
-          <div className="flex flex-col gap-1">
-            <span className="text-sm font-medium text-foreground">Confidential</span>
-            <span className="text-xs text-muted-foreground">
-              Static only. The generated URL sets <span className="font-mono">issue[confidential]</span>.
-            </span>
-          </div>
+          <span className="text-sm font-medium text-foreground">Confidential</span>
         </label>
 
         <VariableInput
@@ -174,7 +162,6 @@ export function IssueTemplateEditor({
           availableColumns={availableColumns}
           placeholder="{{related_issue_id}}"
           singleLine
-          description="After variable replacement, this value must be numeric."
         />
       </CardContent>
     </Card>

@@ -11,7 +11,6 @@ type VariableInputProps = {
   availableColumns: string[]
   placeholder?: string
   singleLine?: boolean
-  description?: string
 }
 
 export function VariableInput({
@@ -21,7 +20,6 @@ export function VariableInput({
   availableColumns,
   placeholder,
   singleLine = false,
-  description,
 }: VariableInputProps) {
   const tokens = tokenizeTemplate(value, availableColumns)
   const textareaRef = React.useRef<HTMLTextAreaElement | null>(null)
@@ -42,12 +40,7 @@ export function VariableInput({
 
   return (
     <label className="flex flex-col gap-2">
-      <div className="flex flex-col gap-1">
-        <span className="text-sm font-medium text-foreground">{label}</span>
-        {description ? (
-          <span className="text-xs text-muted-foreground">{description}</span>
-        ) : null}
-      </div>
+      <span className="text-sm font-medium text-foreground">{label}</span>
 
       <div className="relative">
         <div
