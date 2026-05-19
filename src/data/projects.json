@@ -1,0 +1,10 @@
+[
+  {
+    "name": "GitLab CE",
+    "issueNewUrl": "https://gitlab.com/gitlab-org/gitlab/-/issues/new"
+  },
+  {
+    "name": "GitLab Docs",
+    "issueNewUrl": "https://gitlab.com/gitlab-org/gitlab-docs/-/issues/new"
+  }
+]
