@@ -54,7 +54,7 @@ export function VariableInput({
           ref={backdropRef}
           aria-hidden="true"
           className={cn(
-            "pointer-events-none absolute inset-0 overflow-hidden rounded-lg border border-input bg-background px-3 py-2 text-sm whitespace-pre-wrap break-words text-foreground shadow-xs",
+            "pointer-events-none absolute inset-0 overflow-hidden rounded-lg bg-background px-3 py-2 text-sm whitespace-pre-wrap break-words text-foreground",
             singleLine ? "min-h-10" : "min-h-24"
           )}
         >
