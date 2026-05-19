@@ -39,7 +39,7 @@ export function IssueTemplateEditor({
           value={value.title}
           onChange={(title) => onChange({ ...value, title })}
           availableColumns={availableColumns}
-          placeholder="跟進 {{assignee}} 關於 {{task_title}}"
+          placeholder="{{task_title}}"
           singleLine
         />
 
@@ -50,7 +50,7 @@ export function IssueTemplateEditor({
             onChange={(description) => onChange({ ...value, description })}
             availableColumns={availableColumns}
             placeholder={
-              "## Summary\n\n{{task_title}}\n\n- Team: {{team_name}}"
+              "## 摘要\n\n{{task_title}}\n\n- 團隊：{{team_name}}\n- 組長：{{組長}}"
             }
           />
         </div>
@@ -60,7 +60,7 @@ export function IssueTemplateEditor({
           value={value.assignees}
           onChange={(assignees) => onChange({ ...value, assignees })}
           availableColumns={availableColumns}
-          placeholder="@alice, @bob"
+          placeholder="{{組長}}"
           singleLine
           description="用 , 分隔"
         />
@@ -70,7 +70,7 @@ export function IssueTemplateEditor({
           value={value.labels}
           onChange={(labels) => onChange({ ...value, labels })}
           availableColumns={availableColumns}
-          placeholder="bug, high priority"
+          placeholder="Status::Inbox, 組別::{{team_name}}組"
           singleLine
           description="用 , 分隔"
         />

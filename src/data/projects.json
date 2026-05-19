@@ -1,10 +1,14 @@
 [
   {
-    "name": "GitLab CE",
-    "issueNewUrl": "https://gitlab.com/gitlab-org/gitlab/-/issues/new"
+    "name": "SITCON Camp 2026",
+    "issueNewUrl": "https://gitlab.com/sitcon-tw/camp-2026/board/-/issues/new"
   },
   {
-    "name": "GitLab Docs",
-    "issueNewUrl": "https://gitlab.com/gitlab-org/gitlab-docs/-/issues/new"
+    "name": "SITCON 2026 Marketing",
+    "issueNewUrl": "https://gitlab.com/sitcon-tw/marketing/2026/-/issues/new"
+  },
+  {
+    "name": "SITCON 2026",
+    "issueNewUrl": "https://gitlab.com/sitcon-tw/2026/board/-/issues/new"
   }
 ]

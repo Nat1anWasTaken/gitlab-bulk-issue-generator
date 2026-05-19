@@ -29,10 +29,10 @@ const DEFAULT_TEMPLATE: IssueTemplate = {
     "{{task_title}}",
     "",
     "- 團隊：{{team_name}}",
-    "- 負責人：{{assignee}}",
+    "- 組長：{{組長}}",
   ].join("\n"),
-  assignees: "",
-  labels: "",
+  assignees: "{{組長}}",
+  labels: "Status::Inbox, 組別::{{team_name}}組",
   confidential: false,
   relatedIssueId: "{{related_issue_id}}",
 };
