@@ -6,6 +6,8 @@ export type GitLabProject = {
 export type IssueTemplate = {
   title: string
   description: string
+  assignees: string
+  labels: string
   confidential: boolean
   relatedIssueId: string
 }

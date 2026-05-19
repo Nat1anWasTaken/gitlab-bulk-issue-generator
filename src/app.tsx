@@ -31,6 +31,8 @@ const DEFAULT_TEMPLATE: IssueTemplate = {
     "- 團隊：{{team_name}}",
     "- 負責人：{{assignee}}",
   ].join("\n"),
+  assignees: "",
+  labels: "",
   confidential: false,
   relatedIssueId: "{{related_issue_id}}",
 };

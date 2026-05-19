@@ -14,6 +14,7 @@ type VariableInputProps = {
   onChange: (value: string) => void
   availableColumns: string[]
   placeholder?: string
+  description?: string
   singleLine?: boolean
 }
 
@@ -23,6 +24,7 @@ export function VariableInput({
   onChange,
   availableColumns,
   placeholder,
+  description,
   singleLine = false,
 }: VariableInputProps) {
   const textareaRef = React.useRef<HTMLTextAreaElement | null>(null)
@@ -124,6 +126,9 @@ export function VariableInput({
   return (
     <label className="flex flex-col gap-2">
       <span className="text-sm font-medium text-foreground">{label}</span>
+      {description ? (
+        <span className="text-xs text-muted-foreground">{description}</span>
+      ) : null}
 
       <div className="relative">
         <div

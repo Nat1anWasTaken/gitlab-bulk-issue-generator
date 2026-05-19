@@ -55,6 +55,26 @@ export function IssueTemplateEditor({
           />
         </div>
 
+        <VariableInput
+          label="Assignees"
+          value={value.assignees}
+          onChange={(assignees) => onChange({ ...value, assignees })}
+          availableColumns={availableColumns}
+          placeholder="@alice, @bob"
+          singleLine
+          description="用 , 分隔"
+        />
+
+        <VariableInput
+          label="Labels"
+          value={value.labels}
+          onChange={(labels) => onChange({ ...value, labels })}
+          availableColumns={availableColumns}
+          placeholder="bug, high priority"
+          singleLine
+          description="用 , 分隔"
+        />
+
         <label className="flex items-center gap-3 rounded-lg border border-border bg-muted/30 px-3 py-3">
           <Checkbox
             checked={value.confidential}

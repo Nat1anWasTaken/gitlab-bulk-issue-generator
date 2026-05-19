@@ -4,6 +4,55 @@ import { validateRelatedIssueId } from "@/lib/validation"
 
 const URL_WARNING_LENGTH = 2000
 
+function splitCommaSeparatedValues(value: string) {
+  return value
+    .split(",")
+    .map((item) => item.trim())
+    .filter(Boolean)
+}
+
+function formatAssigneeToken(value: string) {
+  return value.startsWith("@") ? value : `@${value}`
+}
+
+function formatLabelToken(value: string) {
+  const escaped = value.replace(/"/g, '\\"')
+
+  if (/^[A-Za-z0-9_.\-?&@]+$/.test(value)) {
+    return `~${value}`
+  }
+
+  return `~"${escaped}"`
+}
+
+function buildQuickActionsDescription(
+  description: string,
+  assignees: string,
+  labels: string
+) {
+  const quickActions: string[] = []
+  const assigneeValues = splitCommaSeparatedValues(assignees)
+  const labelValues = splitCommaSeparatedValues(labels)
+
+  if (assigneeValues.length > 0) {
+    quickActions.push(`/assign ${assigneeValues.map(formatAssigneeToken).join(" ")}`)
+  }
+
+  if (labelValues.length > 0) {
+    quickActions.push(`/label ${labelValues.map(formatLabelToken).join(" ")}`)
+  }
+
+  if (quickActions.length === 0) {
+    return description
+  }
+
+  const trimmedDescription = description.trim()
+
+  return trimmedDescription
+    ? `${trimmedDescription}\n\n${quickActions.join("\n")}`
+    : quickActions.join("\n")
+}
+
 export function buildGitLabIssueUrl(
   baseIssueNewUrl: string,
   issue: Omit<GeneratedIssue, "rowId" | "rowIndex" | "warnings" | "canOpen" | "url"> & {
@@ -48,6 +97,8 @@ export function generateIssues(
         row.values,
         table.headers
       )
+      const assignees = renderTemplate(template.assignees, row.values, table.headers)
+      const labels = renderTemplate(template.labels, row.values, table.headers)
       const relatedIssueId = renderTemplate(
         template.relatedIssueId,
         row.values,
@@ -63,6 +114,8 @@ export function generateIssues(
       const unknownVariables = [
         ...title.unknownVariables,
         ...description.unknownVariables,
+        ...assignees.unknownVariables,
+        ...labels.unknownVariables,
         ...relatedIssueId.unknownVariables,
       ]
 
@@ -73,6 +126,8 @@ export function generateIssues(
       const emptyVariables = [
         ...title.emptyVariables,
         ...description.emptyVariables,
+        ...assignees.emptyVariables,
+        ...labels.emptyVariables,
         ...relatedIssueId.emptyVariables,
       ]
 
@@ -89,7 +144,11 @@ export function generateIssues(
         rowId: row.id,
         rowIndex: row.index,
         title: title.value,
-        description: description.value,
+        description: buildQuickActionsDescription(
+          description.value,
+          assignees.value,
+          labels.value
+        ),
         confidential: template.confidential,
         relatedIssueId: relatedIssueId.value.trim(),
       }
