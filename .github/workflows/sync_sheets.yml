@@ -21,6 +21,9 @@ jobs:
           node-version: '20'
 
       - name: Run Sheet Sync Script
+        env:
+          SPREADSHEET_ID: ${{ secrets.SPREADSHEET_ID }}
+          GOOGLE_SHEETS_API_KEY: ${{ secrets.GOOGLE_SHEETS_API_KEY }}
         run: node scripts/download_sheets.js
 
       - name: Commit and Push Changes
