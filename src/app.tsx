@@ -16,6 +16,9 @@ import { validateGitLabIssueNewUrl } from "@/lib/validation"
 const STORAGE_KEYS = {
   issueUrl: "gitlab-bulk-issues:issue-url",
   tableId: "gitlab-bulk-issues:table-id",
+  template: "gitlab-bulk-issues:template",
+  uploadedTables: "gitlab-bulk-issues:uploaded-tables",
+  selectedRowsByTable: "gitlab-bulk-issues:selected-rows-by-table",
 }
 
 const DEFAULT_TEMPLATE: IssueTemplate = {
@@ -35,16 +38,47 @@ const DEFAULT_TEMPLATE: IssueTemplate = {
 
 const projects = projectsData as GitLabProject[]
 
+function readStorage<T>(key: string, fallback: T): T {
+  const rawValue = window.localStorage.getItem(key)
+
+  if (!rawValue) {
+    return fallback
+  }
+
+  try {
+    return JSON.parse(rawValue) as T
+  } catch {
+    return fallback
+  }
+}
+
+function readStoredTemplate(): IssueTemplate {
+  const storedTemplate = readStorage<Partial<IssueTemplate> | null>(STORAGE_KEYS.template, null)
+
+  if (!storedTemplate) {
+    return DEFAULT_TEMPLATE
+  }
+
+  return {
+    ...DEFAULT_TEMPLATE,
+    ...storedTemplate,
+  }
+}
+
 function App() {
-  const [template, setTemplate] = React.useState<IssueTemplate>(DEFAULT_TEMPLATE)
+  const [template, setTemplate] = React.useState<IssueTemplate>(() => readStoredTemplate())
   const [issueUrl, setIssueUrl] = React.useState(() =>
     window.localStorage.getItem(STORAGE_KEYS.issueUrl) ?? projects[0]?.issueNewUrl ?? ""
   )
-  const [uploadedTables, setUploadedTables] = React.useState<TableData[]>([])
+  const [uploadedTables, setUploadedTables] = React.useState<TableData[]>(() =>
+    readStorage<TableData[]>(STORAGE_KEYS.uploadedTables, [])
+  )
   const [selectedTableId, setSelectedTableId] = React.useState(
     () => window.localStorage.getItem(STORAGE_KEYS.tableId) ?? staticTables[0]?.id ?? ""
   )
-  const [selectedRowsByTable, setSelectedRowsByTable] = React.useState<Record<string, string[]>>({})
+  const [selectedRowsByTable, setSelectedRowsByTable] = React.useState<Record<string, string[]>>(() =>
+    readStorage<Record<string, string[]>>(STORAGE_KEYS.selectedRowsByTable, {})
+  )
   const [uploadError, setUploadError] = React.useState("")
   const [openStatus, setOpenStatus] = React.useState("")
 
@@ -76,6 +110,21 @@ function App() {
 
     window.localStorage.setItem(STORAGE_KEYS.tableId, selectedTable.id)
   }, [selectedTable])
+
+  React.useEffect(() => {
+    window.localStorage.setItem(STORAGE_KEYS.template, JSON.stringify(template))
+  }, [template])
+
+  React.useEffect(() => {
+    window.localStorage.setItem(STORAGE_KEYS.uploadedTables, JSON.stringify(uploadedTables))
+  }, [uploadedTables])
+
+  React.useEffect(() => {
+    window.localStorage.setItem(
+      STORAGE_KEYS.selectedRowsByTable,
+      JSON.stringify(selectedRowsByTable)
+    )
+  }, [selectedRowsByTable])
 
   const activeUrl = issueUrl.trim()
   const activeUrlValidation = validateGitLabIssueNewUrl(activeUrl)

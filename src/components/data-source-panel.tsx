@@ -152,12 +152,18 @@ export function DataSourcePanel({
                 <TableBody>
                   {selectedTable.rows.length > 0 ? (
                     selectedTable.rows.map((row) => (
-                      <TableRow key={row.id} className="odd:bg-muted/20">
+                      <TableRow
+                        key={row.id}
+                        className="cursor-pointer odd:bg-muted/20"
+                        data-state={selectedRowIds.has(row.id) ? "selected" : undefined}
+                        onClick={() => onToggleRow(row.id)}
+                      >
                         <TableCell className="align-top">
                           <Checkbox
-                            className="mt-1"
+                            className="mt-1 cursor-pointer"
                             checked={selectedRowIds.has(row.id)}
                             onCheckedChange={() => onToggleRow(row.id)}
+                            onClick={(event) => event.stopPropagation()}
                             aria-label={`Select row ${row.index}`}
                           />
                         </TableCell>
