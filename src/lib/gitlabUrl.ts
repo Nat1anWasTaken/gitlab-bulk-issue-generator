@@ -16,10 +16,6 @@ export function buildGitLabIssueUrl(
   url.searchParams.set("issue[title]", issue.title)
   url.searchParams.set("issue[issue_type]", "issue")
 
-  if (issue.issuableTemplate) {
-    url.searchParams.set("issuable_template", issue.issuableTemplate)
-  }
-
   if (issue.descriptionTemplate) {
     url.searchParams.set("description_template", issue.descriptionTemplate)
   }
@@ -51,11 +47,6 @@ export function generateIssues(
     .filter((row) => selectedRowIds.has(row.id))
     .map((row) => {
       const title = renderTemplate(template.title, row.values, table.headers)
-      const issuableTemplate = renderTemplate(
-        template.issuableTemplate,
-        row.values,
-        table.headers
-      )
       const descriptionTemplate = renderTemplate(
         template.descriptionTemplate,
         row.values,
@@ -80,7 +71,6 @@ export function generateIssues(
 
       const unknownVariables = [
         ...title.unknownVariables,
-        ...issuableTemplate.unknownVariables,
         ...descriptionTemplate.unknownVariables,
         ...description.unknownVariables,
         ...relatedIssueId.unknownVariables,
@@ -92,7 +82,6 @@ export function generateIssues(
 
       const emptyVariables = [
         ...title.emptyVariables,
-        ...issuableTemplate.emptyVariables,
         ...descriptionTemplate.emptyVariables,
         ...description.emptyVariables,
         ...relatedIssueId.emptyVariables,
@@ -111,7 +100,6 @@ export function generateIssues(
         rowId: row.id,
         rowIndex: row.index,
         title: title.value,
-        issuableTemplate: issuableTemplate.value,
         descriptionTemplate: descriptionTemplate.value,
         description: description.value,
         confidential: template.confidential,

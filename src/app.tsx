@@ -20,7 +20,6 @@ const STORAGE_KEYS = {
 
 const DEFAULT_TEMPLATE: IssueTemplate = {
   title: "{{task_title}}",
-  issuableTemplate: "",
   descriptionTemplate: "",
   description: [
     "## Summary",

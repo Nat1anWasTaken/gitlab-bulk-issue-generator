@@ -206,10 +206,6 @@ export function GeneratedPreview({
 
                     <dl className="mt-4 grid gap-3 text-sm md:grid-cols-2">
                       <div>
-                        <dt className="font-medium text-foreground">Issuable template</dt>
-                        <dd className="text-muted-foreground">{issue.issuableTemplate || "Empty"}</dd>
-                      </div>
-                      <div>
                         <dt className="font-medium text-foreground">Description template</dt>
                         <dd className="text-muted-foreground">{issue.descriptionTemplate || "Empty"}</dd>
                       </div>

@@ -40,15 +40,6 @@ export function IssueTemplateEditor({
         />
 
         <VariableInput
-          label="Issuable template"
-          value={value.issuableTemplate}
-          onChange={(issuableTemplate) => onChange({ ...value, issuableTemplate })}
-          availableColumns={availableColumns}
-          placeholder="bug-template"
-          singleLine
-        />
-
-        <VariableInput
           label="Description template"
           value={value.descriptionTemplate}
           onChange={(descriptionTemplate) => onChange({ ...value, descriptionTemplate })}

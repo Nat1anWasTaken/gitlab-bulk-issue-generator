@@ -5,7 +5,6 @@ export type GitLabProject = {
 
 export type IssueTemplate = {
   title: string
-  issuableTemplate: string
   descriptionTemplate: string
   description: string
   confidential: boolean
@@ -48,7 +47,6 @@ export type GeneratedIssue = {
   rowId: string
   rowIndex: number
   title: string
-  issuableTemplate: string
   descriptionTemplate: string
   description: string
   confidential: boolean
