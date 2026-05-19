@@ -2,12 +2,13 @@ name: Sync Google Sheets
 
 on:
   schedule:
-    - cron: '0 0 * * *' # Daily at midnight UTC
+    - cron: "0 0 * * *" # Daily at midnight UTC
   workflow_dispatch: # Allows manual trigger from GitHub UI
 
 jobs:
   sync:
     runs-on: ubuntu-latest
+    environment: "Sync Sheets"
     permissions:
       contents: write
 
@@ -18,7 +19,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: "20"
 
       - name: Run Sheet Sync Script
         env:
@@ -30,7 +31,7 @@ jobs:
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          
+
           # Check if there are changes to commit
           if git status --porcelain | grep -q 'src/data/tables/'; then
             git add src/data/tables/*.csv
