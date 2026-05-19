@@ -148,7 +148,7 @@ export function VariableInput({
                     "rounded-[0.2rem]",
                     token.type === "variable-known"
                       ? "bg-emerald-100 text-emerald-900"
-                      : "bg-amber-100 text-amber-900"
+                      : "bg-destructive/12 text-destructive"
                   )}
                 >
                   {token.value}
