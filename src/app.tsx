@@ -14,8 +14,7 @@ import { staticTables } from "@/lib/staticTables"
 import { validateGitLabIssueNewUrl } from "@/lib/validation"
 
 const STORAGE_KEYS = {
-  customUrl: "gitlab-bulk-issues:custom-url",
-  projectName: "gitlab-bulk-issues:project-name",
+  issueUrl: "gitlab-bulk-issues:issue-url",
   tableId: "gitlab-bulk-issues:table-id",
 }
 
@@ -40,11 +39,8 @@ const projects = projectsData as GitLabProject[]
 
 function App() {
   const [template, setTemplate] = React.useState<IssueTemplate>(DEFAULT_TEMPLATE)
-  const [customUrl, setCustomUrl] = React.useState(() =>
-    window.localStorage.getItem(STORAGE_KEYS.customUrl) ?? ""
-  )
-  const [selectedProjectName, setSelectedProjectName] = React.useState(
-    () => window.localStorage.getItem(STORAGE_KEYS.projectName) ?? projects[0]?.name ?? ""
+  const [issueUrl, setIssueUrl] = React.useState(() =>
+    window.localStorage.getItem(STORAGE_KEYS.issueUrl) ?? projects[0]?.issueNewUrl ?? ""
   )
   const [uploadedTables, setUploadedTables] = React.useState<TableData[]>([])
   const [selectedTableId, setSelectedTableId] = React.useState(
@@ -60,9 +56,11 @@ function App() {
   )
 
   const selectedProject = React.useMemo(
-    () => projects.find((project) => project.name === selectedProjectName) ?? projects[0],
-    [selectedProjectName]
+    () => projects.find((project) => project.issueNewUrl === issueUrl),
+    [issueUrl]
   )
+
+  const selectedProjectName = selectedProject?.name ?? "Others"
 
   const selectedTable = React.useMemo(
     () => tables.find((table) => table.id === selectedTableId) ?? tables[0],
@@ -70,16 +68,8 @@ function App() {
   )
 
   React.useEffect(() => {
-    if (!selectedProject) {
-      return
-    }
-
-    window.localStorage.setItem(STORAGE_KEYS.projectName, selectedProject.name)
-  }, [selectedProject])
-
-  React.useEffect(() => {
-    window.localStorage.setItem(STORAGE_KEYS.customUrl, customUrl)
-  }, [customUrl])
+    window.localStorage.setItem(STORAGE_KEYS.issueUrl, issueUrl)
+  }, [issueUrl])
 
   React.useEffect(() => {
     if (!selectedTable?.id) {
@@ -89,7 +79,7 @@ function App() {
     window.localStorage.setItem(STORAGE_KEYS.tableId, selectedTable.id)
   }, [selectedTable])
 
-  const activeUrl = customUrl.trim() || selectedProject?.issueNewUrl || ""
+  const activeUrl = issueUrl.trim()
   const activeUrlValidation = validateGitLabIssueNewUrl(activeUrl)
   const selectedRowIds = React.useMemo(() => {
     if (!selectedTable) {
@@ -187,13 +177,20 @@ function App() {
 
         <ProjectSelector
           projects={projects}
-          selectedProjectUrl={selectedProject?.issueNewUrl ?? ""}
-          selectedProjectName={selectedProject?.name ?? ""}
-          customUrl={customUrl}
-          activeUrl={activeUrl}
-          activeUrlValidation={activeUrlValidation}
-          onProjectChange={setSelectedProjectName}
-          onCustomUrlChange={setCustomUrl}
+          value={issueUrl}
+          selectedProjectName={selectedProjectName}
+          validation={activeUrlValidation}
+          onProjectChange={(projectName) => {
+            if (projectName === "Others") {
+              return
+            }
+
+            const project = projects.find((entry) => entry.name === projectName)
+            if (project) {
+              setIssueUrl(project.issueNewUrl)
+            }
+          }}
+          onValueChange={setIssueUrl}
         />
 
         {!activeUrlValidation.isValid ? (

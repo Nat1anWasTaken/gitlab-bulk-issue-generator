@@ -1,4 +1,3 @@
-import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import {
@@ -13,24 +12,20 @@ import type { GitLabProject, ValidationResult } from "@/lib/types"
 
 type ProjectSelectorProps = {
   projects: GitLabProject[]
-  selectedProjectUrl: string
+  value: string
   selectedProjectName: string
-  customUrl: string
-  activeUrl: string
-  activeUrlValidation: ValidationResult
+  validation: ValidationResult
   onProjectChange: (projectName: string) => void
-  onCustomUrlChange: (url: string) => void
+  onValueChange: (url: string) => void
 }
 
 export function ProjectSelector({
   projects,
-  selectedProjectUrl,
+  value,
   selectedProjectName,
-  customUrl,
-  activeUrl,
-  activeUrlValidation,
+  validation,
   onProjectChange,
-  onCustomUrlChange,
+  onValueChange,
 }: ProjectSelectorProps) {
   return (
     <Card>
@@ -54,34 +49,29 @@ export function ProjectSelector({
                     {project.name}
                   </SelectItem>
                 ))}
+                <SelectItem value="Others">Others</SelectItem>
               </SelectGroup>
             </SelectContent>
           </Select>
-          <span className="text-xs text-muted-foreground">{selectedProjectUrl}</span>
+          <span className="text-xs text-muted-foreground">
+            {selectedProjectName === "Others"
+              ? "Use a custom GitLab new-issue URL."
+              : value}
+          </span>
         </label>
 
         <label className="flex flex-col gap-2">
           <span className="text-sm font-medium text-foreground">Custom GitLab issue URL</span>
           <Input
-            value={customUrl}
-            onChange={(event) => onCustomUrlChange(event.target.value)}
+            value={value}
+            onChange={(event) => onValueChange(event.target.value)}
             placeholder="https://gitlab.com/group/project/-/issues/new"
           />
           <div className="flex flex-wrap items-center gap-2 text-xs">
-            <Badge variant={customUrl.trim() ? "secondary" : "outline"}>
-              {customUrl.trim() ? "Using custom URL when valid" : "Using selected project URL"}
-            </Badge>
-            <span className={activeUrlValidation.isValid ? "text-emerald-700" : "text-destructive"}>
-              {activeUrlValidation.isValid
-                ? "Target URL looks valid."
-                : activeUrlValidation.message}
+            <span className={validation.isValid ? "text-emerald-700" : "text-destructive"}>
+              {validation.isValid ? "Target URL looks valid." : validation.message}
             </span>
           </div>
-          {activeUrl ? (
-            <div className="rounded-lg border border-dashed border-border bg-muted/30 px-3 py-2 text-xs text-muted-foreground">
-              Active target: {activeUrl}
-            </div>
-          ) : null}
         </label>
       </CardContent>
     </Card>
