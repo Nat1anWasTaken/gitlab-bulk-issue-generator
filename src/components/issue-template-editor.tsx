@@ -26,7 +26,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { VariableInput } from "@/components/VariableInput"
+import { VariableInput } from "@/components/variable-input"
 import type { IssueTemplate } from "@/lib/types"
 import { extractVariableNames } from "@/lib/variables"
 
