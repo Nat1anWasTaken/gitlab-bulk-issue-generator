@@ -36,7 +36,7 @@ jobs:
           git add -A src/data/tables
 
           if ! git diff --cached --quiet; then
-            git commit -m "chore: sync Google Sheets data [skip ci]"
+            git commit -m "chore: sync Google Sheets data"
             git push
             echo "Changes pushed successfully!"
           else
