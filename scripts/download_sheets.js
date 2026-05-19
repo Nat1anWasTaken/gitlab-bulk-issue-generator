@@ -6,11 +6,8 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 function cleanFilename(name) {
-  // Keep alphanumeric, hyphens, underscores
-  let cleaned = name.replace(/[^a-zA-Z0-9_\-]/g, '_');
-  // Remove consecutive underscores
-  cleaned = cleaned.replace(/_+/g, '_');
-  return cleaned.replace(/^_+|_+$/g, '');
+  // Preserve Unicode text and spaces; only replace characters that are unsafe in filenames.
+  return name.replace(/[\/\\:*?"<>|\u0000-\u001F]/g, '_').trim();
 }
 
 async function downloadSheets() {
