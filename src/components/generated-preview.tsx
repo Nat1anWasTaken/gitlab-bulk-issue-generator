@@ -186,7 +186,6 @@ export function GeneratedPreview({
                           <Badge variant={issue.canOpen ? "secondary" : "destructive"}>
                             {issue.canOpen ? "Ready" : "Needs fixes"}
                           </Badge>
-                          <Badge variant="outline">{issue.issueType}</Badge>
                           {issue.confidential ? <Badge variant="outline">Confidential</Badge> : null}
                         </div>
                         <div>

@@ -87,17 +87,3 @@
 #root {
   min-height: 100vh;
 }
-
-.mdx-editor {
-  min-height: 18rem;
-}
-
-.mdx-editor [contenteditable="true"] {
-  min-height: 14rem;
-  padding: 0.75rem 1rem 1rem;
-}
-
-.mdx-editor .mdxeditor-toolbar {
-  border-bottom: 1px solid var(--border);
-  background: color-mix(in oklab, var(--muted) 70%, white 30%);
-}

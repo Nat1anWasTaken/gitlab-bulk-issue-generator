@@ -14,7 +14,7 @@ export function buildGitLabIssueUrl(
   const url = new URL(baseIssueNewUrl)
 
   url.searchParams.set("issue[title]", issue.title)
-  url.searchParams.set("issue[issue_type]", issue.issueType)
+  url.searchParams.set("issue[issue_type]", "issue")
 
   if (issue.issuableTemplate) {
     url.searchParams.set("issuable_template", issue.issuableTemplate)
@@ -102,10 +102,6 @@ export function generateIssues(
         warnings.push(`Empty values: ${Array.from(new Set(emptyVariables)).join(", ")}`)
       }
 
-      if (!["issue", "incident"].includes(template.issueType)) {
-        warnings.push("Invalid issue type after rendering.")
-      }
-
       const relatedIssueValidation = validateRelatedIssueId(relatedIssueId.value)
       if (!relatedIssueValidation.isValid && relatedIssueValidation.message) {
         warnings.push(relatedIssueValidation.message)
@@ -115,7 +111,6 @@ export function generateIssues(
         rowId: row.id,
         rowIndex: row.index,
         title: title.value,
-        issueType: template.issueType,
         issuableTemplate: issuableTemplate.value,
         descriptionTemplate: descriptionTemplate.value,
         description: description.value,
@@ -135,8 +130,7 @@ export function generateIssues(
         warnings,
         canOpen: warnings.every((warning) => !warning.startsWith("Missing required title")) &&
           warnings.every((warning) => !warning.startsWith("Unknown variables")) &&
-          warnings.every((warning) => !warning.startsWith("Related issue ID")) &&
-          warnings.every((warning) => !warning.startsWith("Invalid issue type")),
+          warnings.every((warning) => !warning.startsWith("Related issue ID")),
       }
     })
 }

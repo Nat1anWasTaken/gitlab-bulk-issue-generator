@@ -1,31 +1,7 @@
-import "@mdxeditor/editor/style.css"
-
-import {
-  BlockTypeSelect,
-  BoldItalicUnderlineToggles,
-  CreateLink,
-  headingsPlugin,
-  linkPlugin,
-  listsPlugin,
-  markdownShortcutPlugin,
-  MDXEditor,
-  quotePlugin,
-  thematicBreakPlugin,
-  toolbarPlugin,
-  UndoRedo,
-} from "@mdxeditor/editor"
-
 import { Badge } from "@/components/ui/badge"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
+import { Textarea } from "@/components/ui/textarea"
 import { VariableInput } from "@/components/variable-input"
 import type { IssueTemplate } from "@/lib/types"
 import { extractVariableNames } from "@/lib/variables"
@@ -63,35 +39,12 @@ export function IssueTemplateEditor({
           singleLine
         />
 
-        <label className="flex flex-col gap-2">
-          <span className="text-sm font-medium text-foreground">Issue type</span>
-          <Select
-            value={value.issueType}
-            onValueChange={(issueType) =>
-              onChange({
-                ...value,
-                issueType: issueType as IssueTemplate["issueType"],
-              })
-            }
-          >
-            <SelectTrigger className="w-full">
-              <SelectValue placeholder="Select an issue type" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectGroup>
-                <SelectItem value="issue">issue</SelectItem>
-                <SelectItem value="incident">incident</SelectItem>
-              </SelectGroup>
-            </SelectContent>
-          </Select>
-        </label>
-
         <VariableInput
           label="Issuable template"
           value={value.issuableTemplate}
           onChange={(issuableTemplate) => onChange({ ...value, issuableTemplate })}
           availableColumns={availableColumns}
-          placeholder="incident-template"
+          placeholder="bug-template"
           singleLine
         />
 
@@ -107,31 +60,13 @@ export function IssueTemplateEditor({
         <div className="flex flex-col gap-2">
           <span className="text-sm font-medium text-foreground">Description</span>
 
-          <div className="rounded-lg border border-input bg-background">
-            <MDXEditor
-              markdown={value.description}
-              onChange={(description) => onChange({ ...value, description })}
-              className="mdx-editor"
-              plugins={[
-                headingsPlugin(),
-                listsPlugin(),
-                quotePlugin(),
-                thematicBreakPlugin(),
-                linkPlugin(),
-                markdownShortcutPlugin(),
-                toolbarPlugin({
-                  toolbarContents: () => (
-                    <>
-                      <UndoRedo />
-                      <BoldItalicUnderlineToggles />
-                      <CreateLink />
-                      <BlockTypeSelect />
-                    </>
-                  ),
-                }),
-              ]}
-            />
-          </div>
+          <Textarea
+            value={value.description}
+            onChange={(event) => onChange({ ...value, description: event.target.value })}
+            placeholder={"## Summary\n\n{{task_title}}\n\n- Team: {{team_name}}"}
+            className="min-h-72 font-mono"
+            spellCheck={false}
+          />
 
           {markdownVariables.length > 0 ? (
             <div className="flex flex-wrap gap-2">
