@@ -27,7 +27,9 @@ export function VariableInput({
 }: VariableInputProps) {
   const textareaRef = React.useRef<HTMLTextAreaElement | null>(null)
   const backdropRef = React.useRef<HTMLDivElement | null>(null)
+  const suggestionsRef = React.useRef<HTMLDivElement | null>(null)
   const isComposingRef = React.useRef(false)
+  const isApplyingSuggestionRef = React.useRef(false)
   const [isFocused, setIsFocused] = React.useState(false)
   const [isComposing, setIsComposing] = React.useState(false)
   const [draftValue, setDraftValue] = React.useState(value)
@@ -95,6 +97,7 @@ export function VariableInput({
     const textarea = textareaRef.current
 
     if (!textarea) {
+      isApplyingSuggestionRef.current = false
       return
     }
 
@@ -102,6 +105,7 @@ export function VariableInput({
     const context = getVariableAutocompleteContext(currentValue, selectionStart)
 
     if (!context) {
+      isApplyingSuggestionRef.current = false
       return
     }
 
@@ -118,6 +122,7 @@ export function VariableInput({
       textarea.focus()
       textarea.setSelectionRange(nextCaretPosition, nextCaretPosition)
       updateSelectionFromTextarea(textarea)
+      isApplyingSuggestionRef.current = false
     })
   }
 
@@ -188,6 +193,14 @@ export function VariableInput({
             updateSelectionFromTextarea(event.currentTarget)
           }}
           onBlur={() => {
+            if (isApplyingSuggestionRef.current) {
+              return
+            }
+
+            if (suggestionsRef.current?.contains(document.activeElement)) {
+              return
+            }
+
             window.setTimeout(() => setIsFocused(false), 100)
           }}
           onClick={(event) => {
@@ -265,7 +278,13 @@ export function VariableInput({
         />
 
         {isFocused && suggestions.length > 0 ? (
-          <div className="absolute right-0 bottom-2 left-0 z-20 mx-2 rounded-lg border border-border bg-popover p-1 shadow-lg">
+          <div
+            ref={suggestionsRef}
+            className="absolute right-0 bottom-2 left-0 z-20 mx-2 rounded-lg border border-border bg-popover p-1 shadow-lg"
+            onPointerDown={(event) => {
+              event.preventDefault()
+            }}
+          >
             <div className="px-2 py-1 text-xs text-muted-foreground">
               Insert variable
             </div>
@@ -280,9 +299,14 @@ export function VariableInput({
                       ? "bg-accent text-accent-foreground"
                       : "hover:bg-accent/70"
                   )}
+                  tabIndex={-1}
+                  onPointerDown={(event) => {
+                    event.preventDefault()
+                    isApplyingSuggestionRef.current = true
+                    applySuggestion(variableName)
+                  }}
                   onMouseDown={(event) => {
                     event.preventDefault()
-                    applySuggestion(variableName)
                   }}
                   onMouseEnter={() =>
                     setSuggestionNavigation({
