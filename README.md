@@ -7,8 +7,6 @@
 
 一個專為 GitLab 設計的網頁端**批量開卡（Issue）輔助工具**。透過視覺化界面、自訂範本與 CSV 資料匯入，一鍵產生多個 GitLab 新增卡片的連結，並支援瀏覽器分頁或彈出視窗批量開啟，大幅提升專案啟動與任務分發的效率！
 
----
-
 ## 核心特色
 
 - **專案快速切換與自訂 URL**
@@ -37,8 +35,6 @@
   - 一鍵開啟所有無警告的卡片（支援**多個新分頁**或**獨立小視窗**模式）。
   - 自動透過 `localStorage` 記憶您上次輸入的 URL、範本、自訂 CSV 及選取的欄位，重整網頁不丟失進度。
 
----
-
 ## 技術棧
 
 - **前端框架**：React 19, TypeScript
@@ -48,31 +44,34 @@
 - **CSV 解析**：PapaParse
 - **圖示庫**：Lucide React
 
----
-
 ## 快速開始
 
 ### 前提條件
+
 - 已安裝 [Node.js](https://nodejs.org/) (建議 v18 或以上版本)。
 - 本專案使用 [pnpm](https://pnpm.io/) 作為套件管理工具。
 
 ### 安裝與啟動
 
 1. **複製專案**
+
    ```bash
    git clone https://github.com/your-username/gitlab-bulk-issue-generator.git
    cd gitlab-bulk-issue-generator
    ```
 
 2. **安裝依賴**
+
    ```bash
    pnpm install
    ```
 
 3. **啟動開發伺服器**
+
    ```bash
    pnpm dev
    ```
+
    瀏覽器將會自動開啟 `http://localhost:5173`。
 
 4. **建置生產版本**
@@ -80,8 +79,6 @@
    pnpm build
    ```
    建置完成的靜態檔案將輸出於 `dist/` 資料夾。
-
----
 
 ## 使用指南
 
@@ -95,12 +92,14 @@ graph TD
 ```
 
 ### 1. 準備 CSV 資料表
+
 請確保您的 CSV 檔案包含標頭（Headers），例如：
 | task_title | team_name | 組長 | assignee | labels | related_issue_id |
-| :--- | :--- | :--- | :--- | :--- | :--- |
+| : | : | : | : | : | : |
 | 開發組待辦 | 開發 | yorukot | yorukot | Status::Inbox,組別::開發組 | 12345 |
 
 ### 2. 撰寫範本範例
+
 在編輯器中，您可以使用如下的範本設定：
 
 - **標題**：`[2026 Camp] {{task_title}}`
@@ -108,11 +107,12 @@ graph TD
 - **標籤**：`Status::Inbox, 組別::{{team_name}}組`
 - **關聯卡片 ID**：`{{related_issue_id}}`
 - **描述**：
+
   ```markdown
   ## 摘要
-  
+
   {{task_title}} 的具體任務細節。
-  
+
   - 負責團隊：{{team_name}}
   - 負責人：@{{組長}}
   ```
@@ -120,12 +120,12 @@ graph TD
 > [!NOTE]
 > 工具會自動將**指派人**與**標籤**轉換為 GitLab 支援的 Markdown 快速指令（例如 `/assign @yorukot` 和 `/label ~"Status::Inbox" ~"組別::開發組"`）並附在描述的最尾端。
 
----
-
 ## 自訂與擴充
 
 ### 新增常用預設專案
+
 若要修改或新增專案下拉選單的預設項目，請修改 [src/data/projects.json](file:///Users/nathan/Developments/gitlab-bulk-issue-generator/src/data/projects.json)：
+
 ```json
 [
   {
@@ -136,9 +136,8 @@ graph TD
 ```
 
 ### 新增常用預設資料表
-將您的 CSV 檔案放置於 `src/data/tables/` 目錄下（例如 [src/data/tables/sitcon-2026.csv](file:///Users/nathan/Developments/gitlab-bulk-issue-generator/src/data/tables/sitcon-2026.csv)），系統在建置與運行時會透過 `import.meta.glob` 自動偵測並載入為內建資料表。
 
----
+將您的 CSV 檔案放置於 `src/data/tables/` 目錄下（例如 [src/data/tables/sitcon-2026.csv](file:///Users/nathan/Developments/gitlab-bulk-issue-generator/src/data/tables/sitcon-2026.csv)），系統在建置與運行時會透過 `import.meta.glob` 自動偵測並載入為內建資料表。
 
 ## 注意事項
 
@@ -150,8 +149,6 @@ graph TD
 > [!IMPORTANT]
 > **URL 長度限制**
 > 如果 Issue 的描述或標題過長，產生的 URL 長度可能會超過 2,000 字元。這會觸發工具的警示。請適度縮減範本字數，或在開卡後手動編輯詳細內容，以免開卡連結失效。
-
----
 
 ## 授權條款
 
