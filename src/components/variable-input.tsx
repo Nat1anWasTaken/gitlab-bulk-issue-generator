@@ -27,9 +27,7 @@ export function VariableInput({
 }: VariableInputProps) {
   const textareaRef = React.useRef<HTMLTextAreaElement | null>(null)
   const backdropRef = React.useRef<HTMLDivElement | null>(null)
-  const suggestionsRef = React.useRef<HTMLDivElement | null>(null)
   const isComposingRef = React.useRef(false)
-  const isApplyingSuggestionRef = React.useRef(false)
   const [isFocused, setIsFocused] = React.useState(false)
   const [isComposing, setIsComposing] = React.useState(false)
   const [draftValue, setDraftValue] = React.useState(value)
@@ -97,7 +95,6 @@ export function VariableInput({
     const textarea = textareaRef.current
 
     if (!textarea) {
-      isApplyingSuggestionRef.current = false
       return
     }
 
@@ -105,7 +102,6 @@ export function VariableInput({
     const context = getVariableAutocompleteContext(currentValue, selectionStart)
 
     if (!context) {
-      isApplyingSuggestionRef.current = false
       return
     }
 
@@ -122,7 +118,6 @@ export function VariableInput({
       textarea.focus()
       textarea.setSelectionRange(nextCaretPosition, nextCaretPosition)
       updateSelectionFromTextarea(textarea)
-      isApplyingSuggestionRef.current = false
     })
   }
 
@@ -193,15 +188,7 @@ export function VariableInput({
             updateSelectionFromTextarea(event.currentTarget)
           }}
           onBlur={() => {
-            if (isApplyingSuggestionRef.current) {
-              return
-            }
-
-            if (suggestionsRef.current?.contains(document.activeElement)) {
-              return
-            }
-
-            window.setTimeout(() => setIsFocused(false), 100)
+            setIsFocused(false)
           }}
           onClick={(event) => {
             updateSelectionFromTextarea(event.currentTarget)
@@ -279,34 +266,28 @@ export function VariableInput({
 
         {isFocused && suggestions.length > 0 ? (
           <div
-            ref={suggestionsRef}
-            className="absolute right-0 bottom-2 left-0 z-20 mx-2 rounded-lg border border-border bg-popover p-1 shadow-lg"
-            onPointerDown={(event) => {
-              event.preventDefault()
-            }}
+            className="absolute top-full right-0 left-0 z-20 mt-2 rounded-lg border border-border bg-popover p-1 shadow-lg"
+            role="listbox"
+            aria-label={`${label} variable suggestions`}
           >
             <div className="px-2 py-1 text-xs text-muted-foreground">
               Insert variable
             </div>
             <div className="flex max-h-48 flex-col overflow-y-auto">
               {suggestions.map((variableName, index) => (
-                <button
+                <div
                   key={variableName}
-                  type="button"
+                  role="option"
+                  aria-selected={index === activeSuggestionIndex}
                   className={cn(
                     "flex items-center justify-between rounded-md px-2 py-2 text-left text-sm transition-colors",
                     index === activeSuggestionIndex
                       ? "bg-accent text-accent-foreground"
                       : "hover:bg-accent/70"
                   )}
-                  tabIndex={-1}
                   onPointerDown={(event) => {
                     event.preventDefault()
-                    isApplyingSuggestionRef.current = true
                     applySuggestion(variableName)
-                  }}
-                  onMouseDown={(event) => {
-                    event.preventDefault()
                   }}
                   onMouseEnter={() =>
                     setSuggestionNavigation({
@@ -317,7 +298,7 @@ export function VariableInput({
                 >
                   <span className="font-mono text-xs">{`{{${variableName}}}`}</span>
                   <span className="text-xs text-muted-foreground">↵</span>
-                </button>
+                </div>
               ))}
             </div>
           </div>

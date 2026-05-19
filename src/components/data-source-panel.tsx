@@ -112,15 +112,6 @@ export function DataSourcePanel({
 
         {selectedTable ? (
           <>
-            <div className="flex flex-wrap items-center gap-2">
-              <Badge variant={selectedTable.source === "static" ? "outline" : "secondary"}>
-                {selectedTable.source === "static" ? "Bundled CSV" : "Temporary upload"}
-              </Badge>
-              <Badge variant="outline">{selectedTable.rows.length} rows</Badge>
-              <Badge variant="outline">{selectedTable.headers.length} columns</Badge>
-              <Badge variant="secondary">{selectedRowIds.size} selected</Badge>
-            </div>
-
             <div className="flex flex-col gap-2">
               <span className="text-sm font-medium text-foreground">Available variables</span>
               {selectedTable.headers.length > 0 ? (
