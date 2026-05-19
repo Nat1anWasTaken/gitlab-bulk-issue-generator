@@ -1,5 +1,3 @@
-export type IssueType = "issue" | "incident"
-
 export type GitLabProject = {
   name: string
   issueNewUrl: string
@@ -7,7 +5,6 @@ export type GitLabProject = {
 
 export type IssueTemplate = {
   title: string
-  issueType: IssueType
   issuableTemplate: string
   descriptionTemplate: string
   description: string
@@ -51,7 +48,6 @@ export type GeneratedIssue = {
   rowId: string
   rowIndex: number
   title: string
-  issueType: string
   issuableTemplate: string
   descriptionTemplate: string
   description: string
