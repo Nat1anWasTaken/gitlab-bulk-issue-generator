@@ -6,6 +6,23 @@ import { validateRelatedIssueId } from "@/lib/validation"
 
 const URL_WARNING_LENGTH = 2000
 
+export function normalizeGitLabIssueNewUrl(input: string) {
+  const trimmedInput = input.trim()
+
+  if (!trimmedInput) {
+    return null
+  }
+
+  try {
+    const url = new URL(trimmedInput)
+    url.search = ""
+    url.hash = ""
+    return url.toString()
+  } catch {
+    return null
+  }
+}
+
 function applyPanguIfNeeded(value: string, enabled: boolean) {
   return enabled ? pangu.spacingText(value) : value
 }
@@ -66,7 +83,7 @@ export function buildGitLabIssueUrl(
     rowIndex: number
   }
 ) {
-  const url = new URL(baseIssueNewUrl)
+  const url = new URL(normalizeGitLabIssueNewUrl(baseIssueNewUrl) ?? baseIssueNewUrl)
 
   url.searchParams.set("issue[title]", issue.title)
   url.searchParams.set("issue[issue_type]", "issue")

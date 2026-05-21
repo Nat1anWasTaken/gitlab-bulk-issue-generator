@@ -33,7 +33,6 @@ import type { TableData } from "@/lib/types";
 type DataSourcePanelProps = {
   tables: TableData[];
   selectedTableId: string;
-  selectedTable: TableData | undefined;
   selectedRowIds: Set<string>;
   uploadError: string;
   onTableChange: (tableId: string) => void;
@@ -46,7 +45,6 @@ type DataSourcePanelProps = {
 export function DataSourcePanel({
   tables,
   selectedTableId,
-  selectedTable,
   selectedRowIds,
   uploadError,
   onTableChange,
@@ -56,6 +54,8 @@ export function DataSourcePanel({
   onToggleRow,
 }: DataSourcePanelProps) {
   const fileInputId = React.useId();
+  const selectedTable =
+    tables.find((table) => table.id === selectedTableId) ?? tables[0];
 
   return (
     <Card className="h-full">

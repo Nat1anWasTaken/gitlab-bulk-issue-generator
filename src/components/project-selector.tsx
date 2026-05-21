@@ -14,12 +14,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { normalizeGitLabIssueNewUrl } from "@/lib/gitlabUrl";
 import type { GitLabProject, ValidationResult } from "@/lib/types";
 
 type ProjectSelectorProps = {
   projects: GitLabProject[];
   value: string;
-  selectedProjectName: string;
   validation: ValidationResult;
   onProjectChange: (projectName: string) => void;
   onValueChange: (url: string) => void;
@@ -28,11 +28,17 @@ type ProjectSelectorProps = {
 export function ProjectSelector({
   projects,
   value,
-  selectedProjectName,
   validation,
   onProjectChange,
   onValueChange,
 }: ProjectSelectorProps) {
+  const normalizedValue = normalizeGitLabIssueNewUrl(value) ?? value.trim();
+  const selectedProjectName =
+    projects.find(
+      (project) =>
+        normalizeGitLabIssueNewUrl(project.issueNewUrl) === normalizedValue,
+    )?.name ?? "其他";
+
   return (
     <Card>
       <CardHeader>

@@ -29,7 +29,7 @@ type GeneratedPreviewProps = {
   tableSelected: boolean;
   tableIsEmpty: boolean;
   activeUrlIsValid: boolean;
-  onOpenSelected: (mode: "tabs" | "windows") => void;
+  onOpenSelected: (mode: "tabs" | "windows", urls: string[]) => void;
 };
 
 const BULK_OPEN_CONFIRMATION_COUNT = 8;
@@ -49,7 +49,8 @@ export function GeneratedPreview({
 
   const validIssues = generatedIssues.filter((issue) => issue.canOpen);
   const invalidIssues = generatedIssues.filter((issue) => !issue.canOpen);
-  const urlList = validIssues.map((issue) => issue.url).join("\n");
+  const validIssueUrls = validIssues.map((issue) => issue.url);
+  const urlList = validIssueUrls.join("\n");
 
   const blockingMessages: string[] = [];
 
@@ -105,7 +106,7 @@ export function GeneratedPreview({
       return;
     }
 
-    onOpenSelected(mode);
+    onOpenSelected(mode, validIssueUrls);
   }
 
   return (
@@ -327,7 +328,7 @@ export function GeneratedPreview({
               type="button"
               onClick={() => {
                 setShowDialog(false);
-                onOpenSelected(pendingOpenMode);
+                onOpenSelected(pendingOpenMode, validIssueUrls);
               }}
             >
               繼續

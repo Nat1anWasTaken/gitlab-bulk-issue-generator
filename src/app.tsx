@@ -8,13 +8,14 @@ import { ProjectSelector } from "@/components/project-selector";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Separator } from "@/components/ui/separator";
 import type { GitLabProject, IssueTemplate, TableData } from "@/lib/types";
-import { generateIssues } from "@/lib/gitlabUrl";
+import { generateIssues, normalizeGitLabIssueNewUrl } from "@/lib/gitlabUrl";
 import { parseUploadedCsvFile } from "@/lib/csv";
 import { staticTables } from "@/lib/staticTables";
 import { validateGitLabIssueNewUrl } from "@/lib/validation";
 
 const STORAGE_KEYS = {
   issueUrl: "gitlab-bulk-issues:issue-url",
+  projectName: "gitlab-bulk-issues:project-name",
   tableId: "gitlab-bulk-issues:table-id",
   template: "gitlab-bulk-issues:template",
   uploadedTables: "gitlab-bulk-issues:uploaded-tables",
@@ -76,16 +77,32 @@ function readStoredTemplate(): IssueTemplate {
   };
 }
 
+function getInitialIssueUrl() {
+  const storedProjectName = window.localStorage.getItem(
+    STORAGE_KEYS.projectName,
+  );
+  const storedProject = projects.find(
+    (project) => project.name === storedProjectName,
+  );
+
+  if (storedProject) {
+    return storedProject.issueNewUrl;
+  }
+
+  const storedIssueUrl = window.localStorage.getItem(STORAGE_KEYS.issueUrl);
+  return (
+    normalizeGitLabIssueNewUrl(storedIssueUrl ?? "") ??
+    storedIssueUrl ??
+    projects[0]?.issueNewUrl ??
+    ""
+  );
+}
+
 function App() {
   const [template, setTemplate] = React.useState<IssueTemplate>(() =>
     readStoredTemplate(),
   );
-  const [issueUrl, setIssueUrl] = React.useState(
-    () =>
-      window.localStorage.getItem(STORAGE_KEYS.issueUrl) ??
-      projects[0]?.issueNewUrl ??
-      "",
-  );
+  const [issueUrl, setIssueUrl] = React.useState(() => getInitialIssueUrl());
   const [uploadedTables, setUploadedTables] = React.useState<TableData[]>(() =>
     readStorage<TableData[]>(STORAGE_KEYS.uploadedTables, []),
   );
@@ -109,12 +126,18 @@ function App() {
     [uploadedTables],
   );
 
-  const selectedProject = React.useMemo(
-    () => projects.find((project) => project.issueNewUrl === issueUrl),
+  const normalizedIssueUrl = React.useMemo(
+    () => normalizeGitLabIssueNewUrl(issueUrl),
     [issueUrl],
   );
 
-  const selectedProjectName = selectedProject?.name ?? "其他";
+  const activeUrl = normalizedIssueUrl ?? issueUrl.trim();
+
+  const selectedProjectName =
+    projects.find(
+      (project) =>
+        normalizeGitLabIssueNewUrl(project.issueNewUrl) === activeUrl,
+    )?.name ?? "其他";
 
   const selectedTable = React.useMemo(
     () => tables.find((table) => table.id === selectedTableId) ?? tables[0],
@@ -122,8 +145,9 @@ function App() {
   );
 
   React.useEffect(() => {
-    window.localStorage.setItem(STORAGE_KEYS.issueUrl, issueUrl);
-  }, [issueUrl]);
+    window.localStorage.setItem(STORAGE_KEYS.issueUrl, activeUrl);
+    window.localStorage.setItem(STORAGE_KEYS.projectName, selectedProjectName);
+  }, [activeUrl, selectedProjectName]);
 
   React.useEffect(() => {
     if (!selectedTable?.id) {
@@ -154,7 +178,6 @@ function App() {
     );
   }, [selectedRowsByTable]);
 
-  const activeUrl = issueUrl.trim();
   const activeUrlValidation = validateGitLabIssueNewUrl(activeUrl);
   const selectedRowIds = React.useMemo(() => {
     if (!selectedTable) {
@@ -216,15 +239,13 @@ function App() {
     }));
   }
 
-  function handleOpenSelected(mode: "tabs" | "windows") {
-    const readyIssues = generatedIssues.filter((issue) => issue.canOpen);
-
-    for (const issue of readyIssues) {
+  function handleOpenSelected(mode: "tabs" | "windows", urls: string[]) {
+    for (const url of urls) {
       const features =
         mode === "windows"
           ? "noopener,noreferrer,popup=yes,width=1280,height=900"
           : "noopener,noreferrer";
-      window.open(issue.url, "_blank", features);
+      window.open(url, "_blank", features);
     }
   }
 
@@ -247,7 +268,6 @@ function App() {
         <ProjectSelector
           projects={projects}
           value={issueUrl}
-          selectedProjectName={selectedProjectName}
           validation={activeUrlValidation}
           onProjectChange={(projectName) => {
             if (projectName === "其他") {
@@ -281,7 +301,6 @@ function App() {
           <DataSourcePanel
             tables={tables}
             selectedTableId={selectedTable?.id ?? ""}
-            selectedTable={selectedTable}
             selectedRowIds={selectedRowIds}
             uploadError={uploadError}
             onTableChange={setSelectedTableId}
