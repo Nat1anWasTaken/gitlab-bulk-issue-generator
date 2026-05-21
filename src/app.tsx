@@ -35,6 +35,13 @@ const DEFAULT_TEMPLATE: IssueTemplate = {
   labels: "Status::Inbox, 組別::{{team_name}}組",
   confidential: false,
   relatedIssueId: "{{related_issue_id}}",
+  pangu: {
+    title: false,
+    description: false,
+    assignees: false,
+    labels: false,
+    relatedIssueId: false,
+  },
 };
 
 const projects = projectsData as GitLabProject[];

@@ -1,6 +1,7 @@
 import * as React from "react"
 
 import { Badge } from "@/components/ui/badge"
+import { Checkbox } from "@/components/ui/checkbox"
 import { cn } from "@/lib/utils"
 import {
   extractVariableNames,
@@ -16,6 +17,8 @@ type VariableInputProps = {
   placeholder?: string
   description?: string
   singleLine?: boolean
+  usePangu?: boolean
+  onUsePanguChange?: (value: boolean) => void
 }
 
 export function VariableInput({
@@ -26,6 +29,8 @@ export function VariableInput({
   placeholder,
   description,
   singleLine = false,
+  usePangu = false,
+  onUsePanguChange,
 }: VariableInputProps) {
   const textareaRef = React.useRef<HTMLTextAreaElement | null>(null)
   const backdropRef = React.useRef<HTMLDivElement | null>(null)
@@ -40,12 +45,6 @@ export function VariableInput({
   })
   const currentValue = isComposing ? draftValue : value
   const tokens = tokenizeTemplate(currentValue, availableColumns)
-
-  React.useEffect(() => {
-    if (!isComposing) {
-      setDraftValue(value)
-    }
-  }, [isComposing, value])
 
   const autocompleteContext = React.useMemo(() => {
     if (!isFocused || isComposing || selection.start !== selection.end) {
@@ -125,7 +124,19 @@ export function VariableInput({
 
   return (
     <label className="flex flex-col gap-2">
-      <span className="text-sm font-medium text-foreground">{label}</span>
+      <div className="flex items-center justify-between gap-3">
+        <span className="text-sm font-medium text-foreground">{label}</span>
+        {onUsePanguChange ? (
+          <span className="inline-flex items-center gap-2 text-xs text-muted-foreground">
+            <Checkbox
+              checked={usePangu}
+              onCheckedChange={(checked) => onUsePanguChange(checked === true)}
+              aria-label={`${label} pangu formatting`}
+            />
+            Pangu
+          </span>
+        ) : null}
+      </div>
       {description ? (
         <span className="text-xs text-muted-foreground">{description}</span>
       ) : null}

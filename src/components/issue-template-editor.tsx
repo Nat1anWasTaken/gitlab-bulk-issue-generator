@@ -41,18 +41,32 @@ export function IssueTemplateEditor({
           availableColumns={availableColumns}
           placeholder="{{task_title}}"
           singleLine
+          usePangu={value.pangu.title}
+          onUsePanguChange={(enabled) =>
+            onChange({
+              ...value,
+              pangu: { ...value.pangu, title: enabled },
+            })
+          }
         />
 
         <div className="flex flex-col gap-2">
           <VariableInput
             label="Description"
             value={value.description}
-            onChange={(description) => onChange({ ...value, description })}
-            availableColumns={availableColumns}
-            placeholder={
-              "## 摘要\n\n{{task_title}}\n\n- 團隊：{{team_name}}\n- 組長：{{組長}}"
-            }
-          />
+          onChange={(description) => onChange({ ...value, description })}
+          availableColumns={availableColumns}
+          placeholder={
+            "## 摘要\n\n{{task_title}}\n\n- 團隊：{{team_name}}\n- 組長：{{組長}}"
+          }
+          usePangu={value.pangu.description}
+          onUsePanguChange={(enabled) =>
+            onChange({
+              ...value,
+              pangu: { ...value.pangu, description: enabled },
+            })
+          }
+        />
         </div>
 
         <VariableInput
@@ -63,6 +77,13 @@ export function IssueTemplateEditor({
           placeholder="{{組長}}"
           singleLine
           description="用 , 分隔"
+          usePangu={value.pangu.assignees}
+          onUsePanguChange={(enabled) =>
+            onChange({
+              ...value,
+              pangu: { ...value.pangu, assignees: enabled },
+            })
+          }
         />
 
         <VariableInput
@@ -73,6 +94,13 @@ export function IssueTemplateEditor({
           placeholder="Status::Inbox, 組別::{{team_name}}組"
           singleLine
           description="用 , 分隔"
+          usePangu={value.pangu.labels}
+          onUsePanguChange={(enabled) =>
+            onChange({
+              ...value,
+              pangu: { ...value.pangu, labels: enabled },
+            })
+          }
         />
 
         <label className="flex items-center gap-3 rounded-lg border border-border bg-muted/30 px-3 py-3">
@@ -94,6 +122,13 @@ export function IssueTemplateEditor({
           availableColumns={availableColumns}
           placeholder="{{related_issue_id}}"
           singleLine
+          usePangu={value.pangu.relatedIssueId}
+          onUsePanguChange={(enabled) =>
+            onChange({
+              ...value,
+              pangu: { ...value.pangu, relatedIssueId: enabled },
+            })
+          }
         />
       </CardContent>
     </Card>

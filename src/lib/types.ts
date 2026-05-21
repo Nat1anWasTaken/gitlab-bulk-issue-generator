@@ -3,6 +3,14 @@ export type GitLabProject = {
   issueNewUrl: string
 }
 
+export type IssueTemplatePanguOptions = {
+  title: boolean
+  description: boolean
+  assignees: boolean
+  labels: boolean
+  relatedIssueId: boolean
+}
+
 export type IssueTemplate = {
   title: string
   description: string
@@ -10,6 +18,7 @@ export type IssueTemplate = {
   labels: string
   confidential: boolean
   relatedIssueId: string
+  pangu: IssueTemplatePanguOptions
 }
 
 export type TableRow = {

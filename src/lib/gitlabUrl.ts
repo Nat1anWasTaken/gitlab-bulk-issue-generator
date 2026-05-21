@@ -1,8 +1,14 @@
+import pangu from "pangu"
+
 import type { GeneratedIssue, IssueTemplate, TableData } from "@/lib/types"
 import { renderTemplate } from "@/lib/variables"
 import { validateRelatedIssueId } from "@/lib/validation"
 
 const URL_WARNING_LENGTH = 2000
+
+function applyPanguIfNeeded(value: string, enabled: boolean) {
+  return enabled ? pangu.spacingText(value) : value
+}
 
 function splitCommaSeparatedValues(value: string) {
   return value
@@ -104,10 +110,24 @@ export function generateIssues(
         row.values,
         table.headers
       )
+      const renderedTitle = applyPanguIfNeeded(title.value, template.pangu.title)
+      const renderedDescription = applyPanguIfNeeded(
+        description.value,
+        template.pangu.description
+      )
+      const renderedAssignees = applyPanguIfNeeded(
+        assignees.value,
+        template.pangu.assignees
+      )
+      const renderedLabels = applyPanguIfNeeded(labels.value, template.pangu.labels)
+      const renderedRelatedIssueId = applyPanguIfNeeded(
+        relatedIssueId.value,
+        template.pangu.relatedIssueId
+      )
 
       const warnings: string[] = []
 
-      if (!title.value.trim()) {
+      if (!renderedTitle.trim()) {
         warnings.push("缺少必要的標題。")
       }
 
@@ -135,7 +155,7 @@ export function generateIssues(
         warnings.push(`空值：${Array.from(new Set(emptyVariables)).join(", ")}`)
       }
 
-      const relatedIssueValidation = validateRelatedIssueId(relatedIssueId.value)
+      const relatedIssueValidation = validateRelatedIssueId(renderedRelatedIssueId)
       if (!relatedIssueValidation.isValid && relatedIssueValidation.message) {
         warnings.push(relatedIssueValidation.message)
       }
@@ -143,14 +163,14 @@ export function generateIssues(
       const base = {
         rowId: row.id,
         rowIndex: row.index,
-        title: title.value,
+        title: renderedTitle,
         description: buildQuickActionsDescription(
-          description.value,
-          assignees.value,
-          labels.value
+          renderedDescription,
+          renderedAssignees,
+          renderedLabels
         ),
         confidential: template.confidential,
-        relatedIssueId: relatedIssueId.value.trim(),
+        relatedIssueId: renderedRelatedIssueId.trim(),
       }
 
       const url = buildGitLabIssueUrl(baseIssueNewUrl, base)
