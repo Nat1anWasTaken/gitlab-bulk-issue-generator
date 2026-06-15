@@ -2,6 +2,7 @@ import * as React from "react";
 import { ExternalLink, RefreshCw } from "lucide-react";
 
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { GoogleSheetsIcon } from "@/components/google-sheets-icon";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -100,6 +101,7 @@ export function ProjectSelector({
             <a href={spreadsheetUrl} target="_blank" rel="noreferrer">
               <ExternalLink data-icon="inline-start" />
               專案表
+              <GoogleSheetsIcon data-icon="inline-end" />
             </a>
           </Button>
         </div>

@@ -4,6 +4,7 @@ import { ExternalLink, FileUp, RefreshCw, Table2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
+import { GoogleSheetsIcon } from "@/components/google-sheets-icon";
 import {
   Card,
   CardContent,
@@ -90,6 +91,7 @@ export function DataSourcePanel({
             <a href={spreadsheetUrl} target="_blank" rel="noreferrer">
               <ExternalLink data-icon="inline-start" />
               資料表
+              <GoogleSheetsIcon data-icon="inline-end" />
             </a>
           </Button>
         </div>
