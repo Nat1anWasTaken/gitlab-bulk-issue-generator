@@ -10,7 +10,7 @@ import { Separator } from "@/components/ui/separator";
 import type { GitLabProject, IssueTemplate, TableData } from "@/lib/types";
 import { generateIssues, normalizeGitLabIssueNewUrl } from "@/lib/gitlabUrl";
 import { parseUploadedCsvFile } from "@/lib/csv";
-import { staticTables } from "@/lib/staticTables";
+import { fetchRemoteTables, spreadsheetUrl } from "@/lib/remoteTables";
 import { validateGitLabIssueNewUrl } from "@/lib/validation";
 
 const STORAGE_KEYS = {
@@ -107,10 +107,13 @@ function App() {
     readStorage<TableData[]>(STORAGE_KEYS.uploadedTables, []),
   );
   const [selectedTableId, setSelectedTableId] = React.useState(
-    () =>
-      window.localStorage.getItem(STORAGE_KEYS.tableId) ??
-      staticTables[0]?.id ??
-      "",
+    () => window.localStorage.getItem(STORAGE_KEYS.tableId) ?? "",
+  );
+  const [remoteTables, setRemoteTables] = React.useState<TableData[]>([]);
+  const [remoteTablesLoading, setRemoteTablesLoading] = React.useState(false);
+  const [remoteTablesError, setRemoteTablesError] = React.useState("");
+  const [remoteTablesRefreshKey, setRemoteTablesRefreshKey] = React.useState(
+    0,
   );
   const [selectedRowsByTable, setSelectedRowsByTable] = React.useState<
     Record<string, string[]>
@@ -120,10 +123,10 @@ function App() {
   const [uploadError, setUploadError] = React.useState("");
   const tables = React.useMemo(
     () =>
-      [...staticTables, ...uploadedTables].sort((left, right) =>
+      [...remoteTables, ...uploadedTables].sort((left, right) =>
         left.name.localeCompare(right.name),
       ),
-    [uploadedTables],
+    [remoteTables, uploadedTables],
   );
 
   const normalizedIssueUrl = React.useMemo(
@@ -143,6 +146,56 @@ function App() {
     () => tables.find((table) => table.id === selectedTableId) ?? tables[0],
     [selectedTableId, tables],
   );
+
+  React.useEffect(() => {
+    const abortController = new AbortController();
+
+    setRemoteTablesLoading(true);
+    setRemoteTablesError("");
+
+    fetchRemoteTables(abortController.signal)
+      .then((loadedTables) => {
+        if (abortController.signal.aborted) {
+          return;
+        }
+
+        setRemoteTables(loadedTables);
+      })
+      .catch((error) => {
+        if (abortController.signal.aborted) {
+          return;
+        }
+
+        setRemoteTablesError(
+          error instanceof Error
+            ? error.message
+            : "無法載入最新的資料表。",
+        );
+      })
+      .finally(() => {
+        if (abortController.signal.aborted) {
+          return;
+        }
+
+        setRemoteTablesLoading(false);
+      });
+
+    return () => {
+      abortController.abort();
+    };
+  }, [remoteTablesRefreshKey]);
+
+  React.useEffect(() => {
+    if (
+      selectedTableId ||
+      tables.length === 0 ||
+      window.localStorage.getItem(STORAGE_KEYS.tableId)
+    ) {
+      return;
+    }
+
+    setSelectedTableId(tables[0].id);
+  }, [selectedTableId, tables]);
 
   React.useEffect(() => {
     window.localStorage.setItem(STORAGE_KEYS.issueUrl, activeUrl);
@@ -303,8 +356,14 @@ function App() {
             selectedTableId={selectedTable?.id ?? ""}
             selectedRowIds={selectedRowIds}
             uploadError={uploadError}
+            remoteTablesLoading={remoteTablesLoading}
+            remoteTablesError={remoteTablesError}
+            spreadsheetUrl={spreadsheetUrl}
             onTableChange={setSelectedTableId}
             onCsvUpload={(file) => void handleCsvUpload(file)}
+            onRefreshTables={() =>
+              setRemoteTablesRefreshKey((current) => current + 1)
+            }
             onSelectAll={() => {
               if (!selectedTable) {
                 return;

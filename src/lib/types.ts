@@ -30,7 +30,7 @@ export type TableRow = {
 export type TableData = {
   id: string
   name: string
-  source: "static" | "uploaded"
+  source: "remote" | "uploaded"
   headers: string[]
   rows: TableRow[]
 }

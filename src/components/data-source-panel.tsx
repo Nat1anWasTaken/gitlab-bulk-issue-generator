@@ -1,5 +1,5 @@
 import * as React from "react";
-import { FileUp, Table2 } from "lucide-react";
+import { ExternalLink, FileUp, RefreshCw, Table2 } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -35,8 +35,12 @@ type DataSourcePanelProps = {
   selectedTableId: string;
   selectedRowIds: Set<string>;
   uploadError: string;
+  remoteTablesLoading: boolean;
+  remoteTablesError: string;
+  spreadsheetUrl: string;
   onTableChange: (tableId: string) => void;
   onCsvUpload: (file: File | null) => void;
+  onRefreshTables: () => void;
   onSelectAll: () => void;
   onDeselectAll: () => void;
   onToggleRow: (rowId: string) => void;
@@ -47,8 +51,12 @@ export function DataSourcePanel({
   selectedTableId,
   selectedRowIds,
   uploadError,
+  remoteTablesLoading,
+  remoteTablesError,
+  spreadsheetUrl,
   onTableChange,
   onCsvUpload,
+  onRefreshTables,
   onSelectAll,
   onDeselectAll,
   onToggleRow,
@@ -59,9 +67,32 @@ export function DataSourcePanel({
 
   return (
     <Card className="h-full">
-      <CardHeader>
-        <CardTitle>資料來源</CardTitle>
-        <CardDescription>每一個 Row 都會會變成一張卡片</CardDescription>
+      <CardHeader className="gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <div className="flex flex-col gap-1.5">
+          <CardTitle>資料來源</CardTitle>
+          <CardDescription>每一個 Row 都會會變成一張卡片</CardDescription>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={onRefreshTables}
+            disabled={remoteTablesLoading}
+          >
+            <RefreshCw
+              data-icon="inline-start"
+              className={remoteTablesLoading ? "animate-spin" : undefined}
+            />
+            重新整理
+          </Button>
+          <Button asChild variant="outline" size="sm">
+            <a href={spreadsheetUrl} target="_blank" rel="noreferrer">
+              <ExternalLink data-icon="inline-start" />
+              資料表
+            </a>
+          </Button>
+        </div>
       </CardHeader>
       <CardContent className="flex flex-col gap-5">
         <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_auto]">
@@ -106,6 +137,18 @@ export function DataSourcePanel({
             />
           </div>
         </div>
+
+        {remoteTablesLoading ? (
+          <Alert>
+            <AlertDescription>正在載入最新的資料表...</AlertDescription>
+          </Alert>
+        ) : null}
+
+        {remoteTablesError ? (
+          <Alert variant="destructive">
+            <AlertDescription>{remoteTablesError}</AlertDescription>
+          </Alert>
+        ) : null}
 
         {uploadError ? (
           <Alert variant="destructive">
