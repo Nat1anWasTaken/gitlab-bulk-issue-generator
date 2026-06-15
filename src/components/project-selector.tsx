@@ -83,18 +83,6 @@ export function ProjectSelector({
         </div>
       </CardHeader>
       <CardContent className="flex flex-col gap-4">
-        {projectsLoading ? (
-          <Alert>
-            <AlertDescription>正在載入最新的專案表...</AlertDescription>
-          </Alert>
-        ) : null}
-
-        {projectsError ? (
-          <Alert variant="destructive">
-            <AlertDescription>{projectsError}</AlertDescription>
-          </Alert>
-        ) : null}
-
         <div className="grid gap-4 lg:grid-cols-[minmax(0,22rem)_minmax(0,1fr)]">
           <label className="flex flex-col gap-2">
             <span className="text-sm font-medium text-foreground">
@@ -138,6 +126,18 @@ export function ProjectSelector({
             </div>
           </label>
         </div>
+
+        {projectsLoading ? (
+          <Alert>
+            <AlertDescription>正在載入最新的專案表...</AlertDescription>
+          </Alert>
+        ) : null}
+
+        {projectsError ? (
+          <Alert variant="destructive">
+            <AlertDescription>{projectsError}</AlertDescription>
+          </Alert>
+        ) : null}
       </CardContent>
     </Card>
   );
