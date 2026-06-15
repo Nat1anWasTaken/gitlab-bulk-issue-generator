@@ -100,6 +100,7 @@ function App() {
     readStoredTemplate(),
   );
   const [issueUrl, setIssueUrl] = React.useState(() => getInitialIssueUrl());
+  const userEditedIssueUrlRef = React.useRef(false);
   const [uploadedTables, setUploadedTables] = React.useState<TableData[]>(() =>
     readStorage<TableData[]>(STORAGE_KEYS.uploadedTables, []),
   );
@@ -137,11 +138,7 @@ function App() {
     [remoteTablesState.tables, uploadedTables],
   );
 
-  const resolvedIssueUrl = React.useMemo(() => {
-    if (issueUrl) {
-      return issueUrl;
-    }
-
+  const defaultIssueUrl = React.useMemo(() => {
     const storedProjectName = window.localStorage.getItem(
       STORAGE_KEYS.projectName,
     );
@@ -150,14 +147,22 @@ function App() {
     );
 
     return storedProject?.issueNewUrl ?? projects[0]?.issueNewUrl ?? "";
-  }, [issueUrl, projects]);
+  }, [projects]);
+
+  React.useEffect(() => {
+    if (issueUrl || userEditedIssueUrlRef.current || !defaultIssueUrl) {
+      return;
+    }
+
+    setIssueUrl(defaultIssueUrl);
+  }, [defaultIssueUrl, issueUrl]);
 
   const normalizedIssueUrl = React.useMemo(
-    () => normalizeGitLabIssueNewUrl(resolvedIssueUrl),
-    [resolvedIssueUrl],
+    () => normalizeGitLabIssueNewUrl(issueUrl),
+    [issueUrl],
   );
 
-  const activeUrl = normalizedIssueUrl ?? resolvedIssueUrl.trim();
+  const activeUrl = normalizedIssueUrl ?? issueUrl.trim();
 
   const selectedProjectName =
     projects.find(
@@ -391,7 +396,7 @@ function App() {
 
         <ProjectSelector
           projects={projects}
-          value={resolvedIssueUrl}
+          value={issueUrl}
           validation={activeUrlValidation}
           projectsLoading={remoteProjectsState.loading}
           projectsError={remoteProjectsState.error}
@@ -405,10 +410,14 @@ function App() {
               (entry) => entry.name === projectName,
             );
             if (project) {
+              userEditedIssueUrlRef.current = true;
               setIssueUrl(project.issueNewUrl);
             }
           }}
-          onValueChange={setIssueUrl}
+          onValueChange={(url) => {
+            userEditedIssueUrlRef.current = true;
+            setIssueUrl(url);
+          }}
           onRefreshProjects={() =>
             setProjectsRefreshKey((current) => current + 1)
           }
