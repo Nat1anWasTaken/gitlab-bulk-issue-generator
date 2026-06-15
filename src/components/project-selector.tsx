@@ -1,3 +1,4 @@
+import * as React from "react";
 import { ExternalLink, RefreshCw } from "lucide-react";
 
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -44,12 +45,33 @@ export function ProjectSelector({
   onValueChange,
   onRefreshProjects,
 }: ProjectSelectorProps) {
+  const customUrlInputRef = React.useRef<HTMLInputElement>(null);
+  const shouldFocusCustomUrlRef = React.useRef(false);
   const normalizedValue = normalizeGitLabIssueNewUrl(value) ?? value.trim();
   const selectedProjectName =
     projects.find(
       (project) =>
         normalizeGitLabIssueNewUrl(project.issueNewUrl) === normalizedValue,
     )?.name ?? "其他";
+  const handleProjectChange = (projectName: string) => {
+    if (projectName === "其他") {
+      shouldFocusCustomUrlRef.current = true;
+      return;
+    }
+
+    shouldFocusCustomUrlRef.current = false;
+    onProjectChange(projectName);
+  };
+  const handleSelectCloseAutoFocus = (event: Event) => {
+    if (!shouldFocusCustomUrlRef.current) {
+      return;
+    }
+
+    event.preventDefault();
+    shouldFocusCustomUrlRef.current = false;
+    customUrlInputRef.current?.focus();
+    customUrlInputRef.current?.select();
+  };
 
   return (
     <Card>
@@ -88,11 +110,14 @@ export function ProjectSelector({
             <span className="text-sm font-medium text-foreground">
               GitLab 專案
             </span>
-            <Select value={selectedProjectName} onValueChange={onProjectChange}>
+            <Select
+              value={selectedProjectName}
+              onValueChange={handleProjectChange}
+            >
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="選擇 GitLab 專案" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent onCloseAutoFocus={handleSelectCloseAutoFocus}>
                 <SelectGroup>
                   {projects.map((project) => (
                     <SelectItem key={project.name} value={project.name}>
@@ -104,13 +129,16 @@ export function ProjectSelector({
               </SelectContent>
             </Select>
             <span className="text-xs text-muted-foreground">
-              {selectedProjectName === "其他" ? "使用自訂的 URL" : value}
+              {selectedProjectName === "其他"
+                ? "請在右側輸入 GitLab 開卡 URL"
+                : value}
             </span>
           </label>
 
           <label className="flex flex-col gap-2">
             <span className="text-sm font-medium text-foreground">自訂 URL</span>
             <Input
+              ref={customUrlInputRef}
               value={value}
               onChange={(event) => onValueChange(event.target.value)}
               placeholder="https://gitlab.com/group/project/-/issues/new"
