@@ -1,6 +1,5 @@
 import * as React from "react";
 
-import projectsData from "@/data/projects.json";
 import { DataSourcePanel } from "@/components/data-source-panel";
 import { GeneratedPreview } from "@/components/generated-preview";
 import { IssueTemplateEditor } from "@/components/issue-template-editor";
@@ -11,6 +10,10 @@ import type { GitLabProject, IssueTemplate, TableData } from "@/lib/types";
 import { generateIssues, normalizeGitLabIssueNewUrl } from "@/lib/gitlabUrl";
 import { parseUploadedCsvFile } from "@/lib/csv";
 import { fetchRemoteTables, spreadsheetUrl } from "@/lib/remoteTables";
+import {
+  fetchRemoteProjects,
+  projectSpreadsheetUrl,
+} from "@/lib/remoteProjects";
 import { validateGitLabIssueNewUrl } from "@/lib/validation";
 
 const STORAGE_KEYS = {
@@ -45,7 +48,17 @@ const DEFAULT_TEMPLATE: IssueTemplate = {
   },
 };
 
-const projects = projectsData as GitLabProject[];
+type RemoteProjectsState = {
+  projects: GitLabProject[];
+  loading: boolean;
+  error: string;
+};
+
+type RemoteTablesState = {
+  tables: TableData[];
+  loading: boolean;
+  error: string;
+};
 
 function readStorage<T>(key: string, fallback: T): T {
   const rawValue = window.localStorage.getItem(key);
@@ -78,24 +91,8 @@ function readStoredTemplate(): IssueTemplate {
 }
 
 function getInitialIssueUrl() {
-  const storedProjectName = window.localStorage.getItem(
-    STORAGE_KEYS.projectName,
-  );
-  const storedProject = projects.find(
-    (project) => project.name === storedProjectName,
-  );
-
-  if (storedProject) {
-    return storedProject.issueNewUrl;
-  }
-
   const storedIssueUrl = window.localStorage.getItem(STORAGE_KEYS.issueUrl);
-  return (
-    normalizeGitLabIssueNewUrl(storedIssueUrl ?? "") ??
-    storedIssueUrl ??
-    projects[0]?.issueNewUrl ??
-    ""
-  );
+  return normalizeGitLabIssueNewUrl(storedIssueUrl ?? "") ?? storedIssueUrl ?? "";
 }
 
 function App() {
@@ -109,9 +106,19 @@ function App() {
   const [selectedTableId, setSelectedTableId] = React.useState(
     () => window.localStorage.getItem(STORAGE_KEYS.tableId) ?? "",
   );
-  const [remoteTables, setRemoteTables] = React.useState<TableData[]>([]);
-  const [remoteTablesLoading, setRemoteTablesLoading] = React.useState(false);
-  const [remoteTablesError, setRemoteTablesError] = React.useState("");
+  const [remoteProjectsState, setRemoteProjectsState] =
+    React.useState<RemoteProjectsState>({
+      projects: [],
+      loading: true,
+      error: "",
+    });
+  const [projectsRefreshKey, setProjectsRefreshKey] = React.useState(0);
+  const [remoteTablesState, setRemoteTablesState] =
+    React.useState<RemoteTablesState>({
+      tables: [],
+      loading: true,
+      error: "",
+    });
   const [remoteTablesRefreshKey, setRemoteTablesRefreshKey] = React.useState(
     0,
   );
@@ -121,20 +128,36 @@ function App() {
     readStorage<Record<string, string[]>>(STORAGE_KEYS.selectedRowsByTable, {}),
   );
   const [uploadError, setUploadError] = React.useState("");
+  const projects = remoteProjectsState.projects;
   const tables = React.useMemo(
     () =>
-      [...remoteTables, ...uploadedTables].sort((left, right) =>
+      [...remoteTablesState.tables, ...uploadedTables].sort((left, right) =>
         left.name.localeCompare(right.name),
       ),
-    [remoteTables, uploadedTables],
+    [remoteTablesState.tables, uploadedTables],
   );
+
+  const resolvedIssueUrl = React.useMemo(() => {
+    if (issueUrl) {
+      return issueUrl;
+    }
+
+    const storedProjectName = window.localStorage.getItem(
+      STORAGE_KEYS.projectName,
+    );
+    const storedProject = projects.find(
+      (project) => project.name === storedProjectName,
+    );
+
+    return storedProject?.issueNewUrl ?? projects[0]?.issueNewUrl ?? "";
+  }, [issueUrl, projects]);
 
   const normalizedIssueUrl = React.useMemo(
-    () => normalizeGitLabIssueNewUrl(issueUrl),
-    [issueUrl],
+    () => normalizeGitLabIssueNewUrl(resolvedIssueUrl),
+    [resolvedIssueUrl],
   );
 
-  const activeUrl = normalizedIssueUrl ?? issueUrl.trim();
+  const activeUrl = normalizedIssueUrl ?? resolvedIssueUrl.trim();
 
   const selectedProjectName =
     projects.find(
@@ -143,15 +166,75 @@ function App() {
     )?.name ?? "其他";
 
   const selectedTable = React.useMemo(
-    () => tables.find((table) => table.id === selectedTableId) ?? tables[0],
+    () => {
+      const resolvedSelectedTableId =
+        selectedTableId || window.localStorage.getItem(STORAGE_KEYS.tableId);
+
+      return (
+        tables.find((table) => table.id === resolvedSelectedTableId) ??
+        tables[0]
+      );
+    },
     [selectedTableId, tables],
   );
 
   React.useEffect(() => {
     const abortController = new AbortController();
 
-    setRemoteTablesLoading(true);
-    setRemoteTablesError("");
+    void Promise.resolve().then(() => {
+      if (!abortController.signal.aborted) {
+        setRemoteProjectsState((current) => ({
+          ...current,
+          loading: true,
+          error: "",
+        }));
+      }
+    });
+
+    fetchRemoteProjects(abortController.signal)
+      .then((loadedProjects) => {
+        if (abortController.signal.aborted) {
+          return;
+        }
+
+        setRemoteProjectsState({
+          projects: loadedProjects,
+          loading: false,
+          error: "",
+        });
+      })
+      .catch((error) => {
+        if (abortController.signal.aborted) {
+          return;
+        }
+
+        setRemoteProjectsState((current) => ({
+          ...current,
+          loading: false,
+          error:
+            error instanceof Error
+              ? error.message
+              : "無法載入最新的專案表。",
+        }));
+      });
+
+    return () => {
+      abortController.abort();
+    };
+  }, [projectsRefreshKey]);
+
+  React.useEffect(() => {
+    const abortController = new AbortController();
+
+    void Promise.resolve().then(() => {
+      if (!abortController.signal.aborted) {
+        setRemoteTablesState((current) => ({
+          ...current,
+          loading: true,
+          error: "",
+        }));
+      }
+    });
 
     fetchRemoteTables(abortController.signal)
       .then((loadedTables) => {
@@ -159,43 +242,31 @@ function App() {
           return;
         }
 
-        setRemoteTables(loadedTables);
+        setRemoteTablesState({
+          tables: loadedTables,
+          loading: false,
+          error: "",
+        });
       })
       .catch((error) => {
         if (abortController.signal.aborted) {
           return;
         }
 
-        setRemoteTablesError(
-          error instanceof Error
-            ? error.message
-            : "無法載入最新的資料表。",
-        );
-      })
-      .finally(() => {
-        if (abortController.signal.aborted) {
-          return;
-        }
-
-        setRemoteTablesLoading(false);
+        setRemoteTablesState((current) => ({
+          ...current,
+          loading: false,
+          error:
+            error instanceof Error
+              ? error.message
+              : "無法載入最新的資料表。",
+        }));
       });
 
     return () => {
       abortController.abort();
     };
   }, [remoteTablesRefreshKey]);
-
-  React.useEffect(() => {
-    if (
-      selectedTableId ||
-      tables.length === 0 ||
-      window.localStorage.getItem(STORAGE_KEYS.tableId)
-    ) {
-      return;
-    }
-
-    setSelectedTableId(tables[0].id);
-  }, [selectedTableId, tables]);
 
   React.useEffect(() => {
     window.localStorage.setItem(STORAGE_KEYS.issueUrl, activeUrl);
@@ -320,8 +391,11 @@ function App() {
 
         <ProjectSelector
           projects={projects}
-          value={issueUrl}
+          value={resolvedIssueUrl}
           validation={activeUrlValidation}
+          projectsLoading={remoteProjectsState.loading}
+          projectsError={remoteProjectsState.error}
+          spreadsheetUrl={projectSpreadsheetUrl}
           onProjectChange={(projectName) => {
             if (projectName === "其他") {
               return;
@@ -335,6 +409,9 @@ function App() {
             }
           }}
           onValueChange={setIssueUrl}
+          onRefreshProjects={() =>
+            setProjectsRefreshKey((current) => current + 1)
+          }
         />
 
         {!activeUrlValidation.isValid ? (
@@ -356,8 +433,8 @@ function App() {
             selectedTableId={selectedTable?.id ?? ""}
             selectedRowIds={selectedRowIds}
             uploadError={uploadError}
-            remoteTablesLoading={remoteTablesLoading}
-            remoteTablesError={remoteTablesError}
+            remoteTablesLoading={remoteTablesState.loading}
+            remoteTablesError={remoteTablesState.error}
             spreadsheetUrl={spreadsheetUrl}
             onTableChange={setSelectedTableId}
             onCsvUpload={(file) => void handleCsvUpload(file)}
