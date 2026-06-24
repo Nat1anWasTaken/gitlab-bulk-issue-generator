@@ -199,9 +199,12 @@ export function DataSourcePanel({
               </Button>
             </div>
 
-            <div className="max-h-[25rem] overflow-auto rounded-lg border border-border">
-              <Table className="min-w-[38rem]">
-                <TableHeader className="sticky top-0 z-10 bg-muted/70 backdrop-blur">
+            <div className="rounded-lg border border-border">
+              <Table
+                containerClassName="max-h-[25rem] overflow-auto rounded-lg"
+                className="min-w-[38rem]"
+              >
+                <TableHeader className="sticky top-0 z-10 bg-muted/95 backdrop-blur">
                   <TableRow>
                     <TableHead className="w-12">
                       <span className="sr-only">選擇 Row</span>
